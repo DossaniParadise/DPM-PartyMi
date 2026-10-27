@@ -119,6 +119,48 @@
   .lock-row .sub { font-size: .7rem; color: var(--muted); } .lock-row input { padding: 4px 6px; text-align: center; }
   #toTop { position: fixed; right: 16px; bottom: 18px; z-index: 300; width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--navy); color: #fff; font-size: 1.2rem; box-shadow: var(--shadow-md); display: none; align-items: center; justify-content: center; }
   #toTop.show { display: flex; }
+  /* ---- room layout ---- */
+  .tables.canvas { display: block; position: relative; min-height: 600px; background: linear-gradient(#f1f3f9 1px, transparent 1px), linear-gradient(90deg, #f1f3f9 1px, transparent 1px); background-size: 40px 40px; border: 1px dashed var(--line-2); border-radius: 10px; justify-content: flex-start; }
+  .tables.canvas .tbl { position: absolute; }
+  .tables.canvas .disc { cursor: grab; }
+  .tables.canvas .disc.dragging { opacity: .7; cursor: grabbing; }
+  .fix { position: absolute; background: #fff7ed; border: 2px solid #fdba74; color: #9a3412; font-weight: 800; font-size: .8rem; letter-spacing: .04em; text-transform: uppercase; display: flex; align-items: center; justify-content: center; text-align: center; cursor: grab; user-select: none; touch-action: none; border-radius: 10px; box-shadow: var(--shadow-sm); padding: 6px; }
+  .fix.round { border-radius: 50%; } .fix.dragging { opacity: .7; }
+  .tables:not(.canvas) .fix { display: none; }
+  /* ---- budget ---- */
+  .b-head, .b-row { display: grid; grid-template-columns: minmax(150px, 1.4fr) minmax(100px, 1fr) 110px 80px 90px 100px 60px minmax(120px, 1fr) 32px; gap: 6px; align-items: center; padding: 7px 12px; border-bottom: 1px solid var(--line); }
+  .b-head { background: var(--surface-2); font-size: .64rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .b-row input, .b-row select { padding: 4px 6px; font-size: .78rem; width: 100%; } .b-row .tot { font-weight: 800; text-align: right; } .b-row.paid .tot { color: var(--ok); }
+  .b-row .ph { display: flex; align-items: center; gap: 4px; font-size: .68rem; color: var(--muted); }
+  .b-foot { display: flex; justify-content: flex-end; gap: 18px; padding: 10px 12px; font-size: .82rem; background: var(--surface-2); } .b-foot b { font-size: .95rem; }
+  @media (max-width: 900px) { .b-head { display: none; } .b-row { grid-template-columns: 1fr 1fr; } .b-row > :first-child { grid-column: 1 / -1; } }
+  /* ---- kiosk ---- */
+  .kiosk { position: fixed; inset: 0; z-index: 1500; background: linear-gradient(160deg, var(--navy), #0f172a); color: #fff; display: flex; flex-direction: column; align-items: center; padding: 24px 20px; overflow-y: auto; -webkit-user-select: none; user-select: none; }
+  .kiosk .kh { font-family: var(--font-display); font-size: 1.1rem; letter-spacing: .08em; text-transform: uppercase; color: #c7c3f1; }
+  .kiosk .kt { font-size: clamp(1.4rem, 4vw, 2.4rem); font-weight: 800; text-align: center; margin: 10px 0 22px; line-height: 1.15; }
+  .kiosk .letters { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 12px; width: 100%; max-width: 900px; }
+  .kiosk .letters button { font-size: 2rem; font-weight: 800; height: 84px; border-radius: 16px; border: 2px solid rgba(255,255,255,.3); background: rgba(255,255,255,.1); color: #fff; }
+  .kiosk .letters button:disabled { opacity: .18; }
+  .kiosk .letters button:active { background: #fff; color: var(--navy); }
+  .kiosk .names { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; width: 100%; max-width: 1100px; }
+  .kiosk .names button { text-align: left; padding: 16px 18px; border-radius: 16px; border: 2px solid rgba(255,255,255,.3); background: rgba(255,255,255,.1); color: #fff; min-height: 84px; }
+  .kiosk .names button:active { background: #fff; color: var(--navy); }
+  .kiosk .names .n { font-size: 1.3rem; font-weight: 800; } .kiosk .names .s { font-size: .85rem; color: #c7c3f1; margin-top: 2px; }
+  .kiosk .names button:active .s { color: var(--navy); }
+  .kiosk .names .done { color: #86efac; font-size: .8rem; }
+  .kiosk .kback { margin-top: 26px; font-size: 1.1rem; font-weight: 800; padding: 16px 34px; border-radius: 999px; border: 2px solid rgba(255,255,255,.4); background: transparent; color: #fff; }
+  .kiosk .welcome { background: #fff; color: var(--ink); border-radius: 24px; padding: 34px 30px; width: 100%; max-width: 640px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+  .kiosk .welcome .w1 { font-size: 1.2rem; color: var(--muted); font-weight: 700; } .kiosk .welcome .w2 { font-size: clamp(1.8rem, 5vw, 2.6rem); font-weight: 800; margin: 4px 0 18px; }
+  .kiosk .welcome .tnum { font-family: var(--font-display); font-size: clamp(2.6rem, 9vw, 4.6rem); color: var(--navy); line-height: 1; } .kiosk .welcome .tl { font-size: .9rem; color: var(--muted); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+  .kiosk .welcome .pick { margin-top: 22px; background: var(--warn-bg); border: 2px solid #fcd34d; border-radius: 16px; padding: 14px 16px; text-align: left; }
+  .kiosk .welcome .pick b { display: block; color: var(--warn); font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; }
+  .kiosk .welcome .pick div { font-size: 1.25rem; font-weight: 800; padding: 4px 0; }
+  .kiosk .welcome .allgood { margin-top: 18px; color: var(--ok); font-weight: 800; font-size: 1.1rem; }
+  .kiosk .welcome .kdone { margin-top: 24px; width: 100%; font-size: 1.2rem; font-weight: 800; padding: 18px; border-radius: 16px; border: none; background: var(--navy); color: #fff; }
+  .kiosk .kexit { position: fixed; right: 10px; bottom: 10px; opacity: .35; background: none; border: none; color: #fff; font-size: 1rem; padding: 10px; }
+  .kiosk .ksub { font-size: .9rem; color: #c7c3f1; margin-top: 8px; text-align: center; }
+  .offline { background: var(--warn-bg); color: var(--warn); font-size: .72rem; font-weight: 700; text-align: center; padding: 4px; display: none; }
+  .offline.show { display: block; }
   /* ---- check-in ---- */
   .ck-prog { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
   .ck-prog .cp { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; min-width: 130px; flex: 1; box-shadow: var(--shadow-sm); }
@@ -209,15 +251,18 @@
 
 <header>
   <div class="brand"><h1>DPM PartyMi</h1><span id="partyName">Guest list &amp; seating</span></div>
-  <div class="tabs"><button class="on" id="tabGuests" onclick="showTab('guests')">Guest list</button><button id="tabSeating" onclick="showTab('seating')">Seating</button><button id="tabCheckin" onclick="showTab('checkin')">Check-in</button></div>
+  <div class="tabs"><button class="on" id="tabGuests" onclick="showTab('guests')">Guest list</button><button id="tabSeating" onclick="showTab('seating')">Seating</button><button id="tabCheckin" onclick="showTab('checkin')">Check-in</button><button id="tabBudget" onclick="showTab('budget')">Budget</button></div>
   <div class="hdr-actions">
     <span class="conn" id="conn"><i></i><span>Connecting…</span></span>
+    <button class="hbtn" id="undoBtn" onclick="undo()" title="Undo last change" disabled>↶ Undo</button>
+    <button class="hbtn" onclick="openLog()">📜 Log</button>
     <button class="hbtn" onclick="openSettings()">⚙ Party</button>
     <button class="hbtn" onclick="printChart()">🖨 Print</button>
     <button class="hbtn" onclick="signOut()" title="Sign out">⏻</button>
   </div>
 </header>
 
+<div class="offline" id="offline">Offline — changes are saved on this device and will sync when the connection returns.</div>
 <main>
   <div class="strip" id="strip"></div>
 
@@ -246,16 +291,32 @@
           <button class="btn primary" onclick="autoSeat()">✨ Auto-seat</button>
           <button class="btn" onclick="openTables()">🪑 Tables</button>
           <button class="btn" onclick="openLocks()">🔒 Locks</button>
+          <button class="btn" id="layoutBtn" onclick="toggleLayout()">🗺 Room layout</button>
+          <span id="layoutTools" style="display:none;gap:6px;"><button class="btn" onclick="addFixture()">+ Stage / bar / …</button><button class="btn" onclick="autoArrange()">Auto-arrange</button></span>
           <label class="tog"><input type="checkbox" id="onlyYes" onchange="setOnlyYes(this.checked)"> Seat confirmed (Yes) only</label>
           <span class="sp"></span>
           <span class="zoom"><button class="btn xs" onclick="zoom(-0.1)">−</button><span id="zoomPct">100%</span><button class="btn xs" onclick="zoom(0.1)">+</button></span>
           <button class="btn danger" onclick="clearSeats()">Clear seating</button>
         </div>
         <div class="tables" id="tables"></div>
+        <p id="layoutHint" style="display:none;font-size:.72rem;color:var(--muted);margin-top:6px;">Layout mode: drag a table by its centre disc to move it. Drag fixtures to place them; tap a fixture to rename, resize or delete it. Seats and guests still drag as usual.</p>
         <div class="legend" id="legend"></div>
       </div>
     </div>
   </section>
+  <!-- BUDGET -->
+  <section class="view" id="viewBudget">
+    <div class="strip" id="budgetStrip"></div>
+    <div class="toolbar">
+      <label style="font-size:.8rem;display:flex;align-items:center;gap:6px;">Total budget $<input id="bTarget" type="number" min="0" step="100" style="width:110px;padding:5px 8px;" onchange="setBudgetTarget(this.value)"></label>
+      <span style="flex:1"></span>
+      <button class="btn" onclick="exportBudget()">⬇ CSV</button>
+      <button class="btn primary" onclick="addBudgetItem()">+ Line item</button>
+    </div>
+    <div class="group" id="budgetList"></div>
+    <p style="font-size:.72rem;color:var(--muted);margin-top:8px;">"Per head" lines multiply the unit cost by the current heads-to-seat count (<span id="bHeads"></span>), so catering updates itself as RSVPs come in.</p>
+  </section>
+
   <!-- CHECK-IN -->
   <section class="view" id="viewCheckin">
     <div class="toolbar">
@@ -263,12 +324,13 @@
       <div class="seg" id="cfSeg"><button class="on" data-f="all" onclick="setCheckFilter('all')">All</button><button data-f="pending" onclick="setCheckFilter('pending')">Not arrived</button><button data-f="done" onclick="setCheckFilter('done')">Arrived</button></div>
       <span style="flex:1"></span>
       <button class="btn" onclick="openCheckCols()">Columns</button>
+      <button class="btn primary" onclick="startKiosk()">📱 Kiosk mode</button>
     </div>
     <div class="ck-prog" id="ckProg"></div>
     <div class="group" id="checkList"></div>
   </section>
 </main>
-<footer>DPM PartyMi · v1.2 · Guests come live from DPM FindMi (read-only) · RSVPs, +1s, tables and seating are saved in Firestore (partymi)</footer>
+<footer>DPM PartyMi · v2.0 · Guests come live from DPM FindMi (read-only) · RSVPs, +1s, tables and seating are saved in Firestore (partymi)</footer>
 
 <!-- Extra guest modal -->
 <div class="backdrop" id="extraModal"><div class="modal">
@@ -320,6 +382,31 @@
   <div class="mf"><button class="btn" onclick="closeModal('setModal')">Cancel</button><button class="btn primary" onclick="saveSettings()">Save</button></div>
 </div></div>
 
+<!-- Fixture modal -->
+<div class="backdrop" id="fixModal"><div class="modal">
+  <div class="mh"><h3>Fixture</h3><button class="x" onclick="closeModal('fixModal')">×</button></div>
+  <div class="mb">
+    <input type="hidden" id="fxId">
+    <div class="fg"><label>Label</label><input id="fxLabel" placeholder="Stage, Dance floor, Bar, Entrance, DJ, Buffet…"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+      <div class="fg"><label>Width (px)</label><input id="fxW" type="number" min="40" max="2000"></div>
+      <div class="fg"><label>Height (px)</label><input id="fxH" type="number" min="40" max="2000"></div>
+      <div class="fg"><label>Shape</label><select id="fxShape"><option value="rect">Rectangle</option><option value="round">Round</option></select></div>
+    </div>
+  </div>
+  <div class="mf"><button class="btn danger" onclick="deleteFixture()" style="margin-right:auto;">Delete</button><button class="btn" onclick="closeModal('fixModal')">Cancel</button><button class="btn primary" onclick="saveFixture()">Save</button></div>
+</div></div>
+
+<!-- Log modal -->
+<div class="backdrop" id="logModal"><div class="modal">
+  <div class="mh"><h3>Change log</h3><button class="x" onclick="closeModal('logModal')">×</button></div>
+  <div class="mb" id="logBody" style="font-size:.78rem;"></div>
+  <div class="mf"><button class="btn" onclick="setEditorName()">Change my name</button><button class="btn primary" onclick="closeModal('logModal')">Close</button></div>
+</div></div>
+
+<!-- Kiosk -->
+<div id="kiosk" class="kiosk" style="display:none;"></div>
+
 <!-- Locks modal -->
 <div class="backdrop" id="locksModal"><div class="modal">
   <div class="mh"><h3>Lock guests to a table</h3><button class="x" onclick="closeModal('locksModal')">×</button></div>
@@ -342,7 +429,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
   const app = initializeApp({
     apiKey: "AIzaSyBk_jtI46d_5BZTK-mXIP_78R-X59Bo0oc",
     authDomain: "partymi.firebaseapp.com",
@@ -351,7 +438,8 @@
     messagingSenderId: "9170595743",
     appId: "1:9170595743:web:36a2106053c9389cd117aa"
   });
-  window.FS = { db: getFirestore(app), doc, setDoc, onSnapshot };
+  let db; try { db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) }); } catch (e) { db = initializeFirestore(app, {}); }
+  window.FS = { db, doc, setDoc, onSnapshot };
   window.dispatchEvent(new Event("firebase-ready"));
 </script>
 
@@ -376,14 +464,14 @@ const GROUPS = {
 let findmi = null;
 let roster = {};        // key -> guest (from FindMi + extras), rebuilt on every change
 const DEFAULT_COLS = ["Arrived", "Ticket", "Badge", "Goodie bag"];
-let state = { tables: [], seats: {}, guests: {}, extras: {}, checkin: {}, settings: { name: "", when: "", code: DEFAULT_CODE, onlyYes: false, incl: { exec: true, dm: true, gm: true, support: true, tech: true } } };
+let state = { tables: [], seats: {}, guests: {}, extras: {}, checkin: {}, layout: { on: false, pos: {}, fixtures: [] }, budget: { target: 0, items: [] }, log: [], settings: { name: "", when: "", code: DEFAULT_CODE, onlyYes: false, incl: { exec: true, dm: true, gm: true, support: true, tech: true } } };
 let filter = "all";
 let picked = null;      // occupant key selected by tap
 let drag = null;
 let saveT = null, _toastT = null;
 const $ = id => document.getElementById(id);
 function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
-function toast(m) { const t = $("toast"); t.textContent = m; t.classList.add("show"); clearTimeout(_toastT); _toastT = setTimeout(() => t.classList.remove("show"), 2000); }
+function toast(m) { if (typeof kioskOn !== "undefined" && kioskOn) return; const t = $("toast"); t.textContent = m; t.classList.add("show"); clearTimeout(_toastT); _toastT = setTimeout(() => t.classList.remove("show"), 2000); }
 function titleCase(w) { return w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w; }
 function personName(raw) {
   let s = String(raw || "").trim(); const fix = t => t.split("-").map(titleCase).join("-");
@@ -449,23 +537,37 @@ function pruneSeats() {   // drop occupants who no longer attend / tables that n
 /* ============================================================
    PERSISTENCE
    ============================================================ */
-function save() { clearTimeout(saveT); saveT = setTimeout(async () => { try { await FS.setDoc(FS.doc(FS.db, "party", "main"), state); } catch (e) { toast("Save failed: " + e.message); } }, 250); }
+/* ---- undo / log / local cache ---- */
+let undoStack = [], lastSnap = null;
+function editorName() { try { return localStorage.getItem("partymiEditor") || ""; } catch (e) { return ""; } }
+window.setEditorName = () => { const n = prompt("Your name (shown in the change log):", editorName()); if (n != null) { try { localStorage.setItem("partymiEditor", n.trim()); } catch (e) {} } };
+function cacheLocal() { try { localStorage.setItem("partymiState", JSON.stringify(state)); } catch (e) {} }
+function save(label, opts) {
+  opts = opts || {};
+  if (!opts.noUndo) { if (lastSnap) { undoStack.push(lastSnap); if (undoStack.length > 40) undoStack.shift(); } }
+  if (label !== false) { if (!editorName() && !opts.silent) setEditorName(); state.log = (state.log || []).concat([{ t: Date.now(), who: editorName() || "someone", a: label || "Edit" }]).slice(-400); }
+  lastSnap = JSON.stringify(state); cacheLocal(); $("undoBtn").disabled = !undoStack.length;
+  clearTimeout(saveT); saveT = setTimeout(async () => { try { await FS.setDoc(FS.doc(FS.db, "party", "main"), state); } catch (e) { toast("Save failed: " + e.message); } }, 250);
+}
+window.undo = () => { if (!undoStack.length) return; const prev = JSON.parse(undoStack.pop()); const log = state.log || []; const lastAct = log.length ? log[log.length - 1].a : "change"; state = prev; state.log = log.concat([{ t: Date.now(), who: editorName() || "someone", a: "Undid: " + lastAct }]).slice(-400); lastSnap = JSON.stringify(state); cacheLocal(); $("undoBtn").disabled = !undoStack.length; clearTimeout(saveT); saveT = setTimeout(async () => { try { await FS.setDoc(FS.doc(FS.db, "party", "main"), state); } catch (e) {} }, 250); buildRoster(); render(); toast("Undone: " + lastAct); };
+window.openLog = () => { const log = (state.log || []).slice().reverse().slice(0, 150); $("logBody").innerHTML = log.length ? log.map(l => `<div style="display:flex;gap:10px;padding:5px 0;border-bottom:1px solid var(--line);"><span style="color:var(--muted);white-space:nowrap;min-width:120px;">${new Date(l.t).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span><span style="min-width:80px;font-weight:700;">${esc(l.who)}</span><span>${esc(l.a)}</span></div>`).join("") : `<div class="empty" style="color:var(--muted);">No changes logged yet.</div>`; $("logModal").classList.add("active"); };
 function startFirestore() {
   FS.onSnapshot(FS.doc(FS.db, "party", "main"), snap => {
-    if (snap.exists()) { const d = snap.data(); state = Object.assign({ tables: [], seats: {}, guests: {}, extras: {}, checkin: {} }, d); state.checkin = state.checkin || {}; state.settings = Object.assign({ name: "", when: "", code: DEFAULT_CODE, onlyYes: false, incl: {} }, d.settings || {}); }
-    $("conn").classList.add("ok"); $("conn").lastChild.textContent = "FindMi + Firestore";
-    if (!drag) { buildRoster(); render(); }
+    if (snap.exists()) { const d = snap.data(); state = Object.assign({ tables: [], seats: {}, guests: {}, extras: {}, checkin: {} }, d); state.checkin = state.checkin || {}; state.layout = Object.assign({ on: false, pos: {}, fixtures: [] }, d.layout || {}); state.budget = Object.assign({ target: 0, items: [] }, d.budget || {}); state.log = d.log || []; state.settings = Object.assign({ name: "", when: "", code: DEFAULT_CODE, onlyYes: false, incl: {} }, d.settings || {}); }
+    lastSnap = JSON.stringify(state); cacheLocal();
+    $("conn").classList.add("ok"); $("conn").lastChild.textContent = (snap.metadata && snap.metadata.fromCache) ? "Firestore (cached)" : "FindMi + Firestore";
+    if (!drag) { buildRoster(); render(); if (kioskOn) renderKiosk(); }
   }, e => { $("conn").lastChild.textContent = "Firestore error: " + e.code; });
 }
 async function loadFindMi() {
-  try { const r = await fetch(FINDMI_URL + "?_=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw new Error("HTTP " + r.status); findmi = await r.json(); buildRoster(); render(); }
-  catch (e) { $("conn").lastChild.textContent = "FindMi unreachable"; $("guestList").innerHTML = `<div class="group"><div style="padding:14px;color:var(--muted)">Couldn't load FindMi (${esc(e.message)}). <a href="#" onclick="location.reload();return false;">Reload</a></div></div>`; }
+  try { const r = await fetch(FINDMI_URL + "?_=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw new Error("HTTP " + r.status); findmi = await r.json(); try { localStorage.setItem("partymiFindmi", JSON.stringify(findmi)); } catch (x) {} buildRoster(); render(); if (kioskOn) renderKiosk(); }
+  catch (e) { if (findmi) { toast("FindMi unreachable — using the last copy from this device"); return; } $("conn").lastChild.textContent = "FindMi unreachable"; $("guestList").innerHTML = `<div class="group"><div style="padding:14px;color:var(--muted)">Couldn't load FindMi (${esc(e.message)}). <a href="#" onclick="location.reload();return false;">Reload</a></div></div>`; }
 }
 
 /* ============================================================
    RENDER
    ============================================================ */
-function render() { pruneSeats(); renderStrip(); renderGuests(); renderSeating(); renderCheckin(); $("partyName").textContent = state.settings.name || "Guest list & seating"; $("onlyYes").checked = !!state.settings.onlyYes; }
+function render() { pruneSeats(); renderStrip(); renderGuests(); renderSeating(); renderCheckin(); renderBudget(); syncLayoutUI(); $("partyName").textContent = state.settings.name || "Guest list & seating"; $("onlyYes").checked = !!state.settings.onlyYes; }
 function renderStrip() {
   const keys = Object.keys(roster).filter(k => !hidden(k));
   const yes = keys.filter(k => rsvp(k) === "yes"), no = keys.filter(k => rsvp(k) === "no"), inv = keys.filter(k => rsvp(k) === "invited");
@@ -510,11 +612,11 @@ function renderGuests() {
   });
   $("guestList").innerHTML = h || `<div class="group"><div style="padding:16px;color:var(--muted);text-align:center;">No guests match.</div></div>`;
 }
-window.setRsvp = (k, v) => { state.guests[k] = Object.assign({}, gInfo(k), { rsvp: v }); save(); render(); };
-window.setPlus = (k, v) => { state.guests[k] = Object.assign({}, gInfo(k), { plusOne: v }); save(); render(); };
-window.setField = (k, f, v) => { state.guests[k] = Object.assign({}, gInfo(k), { [f]: v }); save(); render(); };
-window.bulkPlusOne = on => { if (!confirm(on ? "Turn on a +1 for every guest on the list?" : "Remove the +1 from every guest?")) return; Object.keys(roster).forEach(k => { if (!hidden(k)) state.guests[k] = Object.assign({}, gInfo(k), { plusOne: on }); }); save(); render(); };
-window.setOnlyYes = v => { state.settings.onlyYes = v; save(); render(); };
+window.setRsvp = (k, v) => { state.guests[k] = Object.assign({}, gInfo(k), { rsvp: v }); save("RSVP " + (v === "invited" ? "cleared" : v.toUpperCase()) + " — " + (roster[k] || {}).name); render(); };
+window.setPlus = (k, v) => { state.guests[k] = Object.assign({}, gInfo(k), { plusOne: v }); save((v ? "+1 added — " : "+1 removed — ") + (roster[k] || {}).name); render(); };
+window.setField = (k, f, v) => { state.guests[k] = Object.assign({}, gInfo(k), { [f]: v }); save((f === "hidden" ? (v ? "Hid " : "Unhid ") : f === "plusOneName" ? "+1 name — " : "Note — ") + (roster[k] || {}).name); render(); };
+window.bulkPlusOne = on => { if (!confirm(on ? "Turn on a +1 for every guest on the list?" : "Remove the +1 from every guest?")) return; Object.keys(roster).forEach(k => { if (!hidden(k)) state.guests[k] = Object.assign({}, gInfo(k), { plusOne: on }); }); save(on ? "+1 for everyone" : "Cleared all +1s"); render(); };
+window.setOnlyYes = v => { state.settings.onlyYes = v; save(v ? "Seat confirmed only: on" : "Seat confirmed only: off"); render(); };
 
 /* ---- seating ---- */
 function chip(occ, extraCls) {
@@ -537,7 +639,8 @@ function renderSeating() {
     const R = Math.max(88, Math.round(t.seats * 96 / (2 * Math.PI)) + 8);
     const D = R * 2 + 100, cx = D / 2, cy = D / 2, inner = (R - 50) * 2;
     const used = Array.from({ length: t.seats }).filter((_, i) => state.seats[t.id + ":" + i]).length;
-    th += `<div class="tbl" data-table="${t.id}" style="width:${D}px;height:${D}px;">
+    const lp = state.layout.on ? (state.layout.pos[t.id] || autoPos(t)) : null;
+    th += `<div class="tbl" data-table="${t.id}" style="width:${D}px;height:${D}px;${lp ? `left:${lp.x}px;top:${lp.y}px;` : ""}">
       <div class="disc" style="width:${inner}px;height:${inner}px;left:${cx - inner / 2}px;top:${cy - inner / 2}px;"><div class="tn" contenteditable="true" spellcheck="false" onblur="renameTable('${t.id}', this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${esc(t.name)}</div><div class="tc">${used}/${t.seats}</div><div class="tools"><button class="btn xs" title="Empty this table" onclick="emptyTable('${t.id}')">empty</button></div></div>`;
     for (let i = 0; i < t.seats; i++) {
       const a = -Math.PI / 2 + i * 2 * Math.PI / t.seats;
@@ -547,14 +650,54 @@ function renderSeating() {
     }
     th += `</div>`;
   });
+  if (state.layout.on) {
+    const W = Math.max(1200, ...state.tables.map(t => (state.layout.pos[t.id] || {}).x + 420 || 0), ...state.layout.fixtures.map(f => f.x + f.w + 40)), H = Math.max(600, ...state.tables.map(t => (state.layout.pos[t.id] || {}).y + 420 || 0), ...state.layout.fixtures.map(f => f.y + f.h + 40));
+    th = state.layout.fixtures.map(f => `<div class="fix ${f.shape === "round" ? "round" : ""}" data-fix="${f.id}" style="left:${f.x}px;top:${f.y}px;width:${f.w}px;height:${f.h}px;">${esc(f.label)}</div>`).join("") + th;
+    $("tables").classList.add("canvas"); $("tables").style.width = W + "px"; $("tables").style.height = H + "px";
+  } else { $("tables").classList.remove("canvas"); $("tables").style.width = ""; $("tables").style.height = ""; }
   $("tables").innerHTML = th || `<div style="padding:30px;color:var(--muted);text-align:center;width:100%;">No tables yet — click <b>🪑 Tables</b> to set how many tables and seats.</div>`;
   $("legend").innerHTML = Object.keys(GROUPS).map(g => `<span><i style="background:${GROUPS[g].color}"></i>${GROUPS[g].label}</span>`).join("") + `<span><i style="background:#fff;border:1.5px dashed #94a3b8"></i>+1</span><span><i style="background:#fff;border:1.5px solid #fcd34d"></i>no reply yet</span>`;
 }
+/* ---- room layout ---- */
+function tableD(t) { const R = Math.max(88, Math.round(t.seats * 96 / (2 * Math.PI)) + 8); return R * 2 + 100; }
+function autoPos(t) { const i = state.tables.indexOf(t), cols = 4; const step = Math.max(...state.tables.map(tableD)) + 20; return { x: 40 + (i % cols) * step, y: 40 + Math.floor(i / cols) * step }; }
+window.autoArrange = () => { state.layout.pos = {}; state.tables.forEach(t => state.layout.pos[t.id] = autoPos(t)); save("Auto-arranged room"); render(); };
+window.toggleLayout = () => { state.layout.on = !state.layout.on; if (state.layout.on) state.tables.forEach(t => { if (!state.layout.pos[t.id]) state.layout.pos[t.id] = autoPos(t); }); save(state.layout.on ? "Room layout on" : "Room layout off", { silent: true }); render(); };
+function syncLayoutUI() { $("layoutBtn").classList.toggle("primary", !!state.layout.on); $("layoutTools").style.display = state.layout.on ? "inline-flex" : "none"; $("layoutHint").style.display = state.layout.on ? "" : "none"; }
+window.addFixture = () => { openFixture(null); };
+function openFixture(id) { const f = id && state.layout.fixtures.find(x => x.id === id); $("fxId").value = f ? f.id : ""; $("fxLabel").value = f ? f.label : ""; $("fxW").value = f ? f.w : 360; $("fxH").value = f ? f.h : 120; $("fxShape").value = f ? (f.shape || "rect") : "rect"; $("fixModal").classList.add("active"); setTimeout(() => $("fxLabel").focus(), 60); }
+window.saveFixture = () => { const id = $("fxId").value || "f" + Date.now().toString(36); let f = state.layout.fixtures.find(x => x.id === id); const label = $("fxLabel").value.trim() || "Fixture"; if (!f) { const below = Math.max(40, ...state.tables.map(t => ((state.layout.pos[t.id] || autoPos(t)).y + tableD(t) + 30))); f = { id, x: 40, y: Math.min(below, 1400) }; state.layout.fixtures.push(f); } Object.assign(f, { label, w: Math.max(40, Number($("fxW").value) || 200), h: Math.max(40, Number($("fxH").value) || 100), shape: $("fxShape").value }); closeModal("fixModal"); save("Fixture: " + label); render(); };
+window.deleteFixture = () => { const id = $("fxId").value; const f = state.layout.fixtures.find(x => x.id === id); if (!f) { closeModal("fixModal"); return; } state.layout.fixtures = state.layout.fixtures.filter(x => x.id !== id); closeModal("fixModal"); save("Removed fixture " + f.label); render(); };
+(function wireLayoutDrag() {
+  let d = null;
+  document.body.addEventListener("pointerdown", e => {
+    if (!state.layout.on || e.button) return;
+    if (e.target.closest(".chip, button, input, [contenteditable]")) return;
+    const disc = e.target.closest(".disc"), fix = e.target.closest(".fix"); const el = disc ? disc.closest(".tbl") : fix; if (!el) return;
+    const z = zoomLevel || 1;
+    d = { el, kind: disc ? "tbl" : "fix", id: disc ? el.dataset.table : el.dataset.fix, sx: e.clientX, sy: e.clientY, x0: parseFloat(el.style.left) || 0, y0: parseFloat(el.style.top) || 0, moved: false, pid: e.pointerId, z };
+    (disc || fix).classList.add("dragging"); e.preventDefault();
+  }, { passive: false });
+  document.body.addEventListener("pointermove", e => {
+    if (!d || e.pointerId !== d.pid) return;
+    const dx = (e.clientX - d.sx) / d.z, dy = (e.clientY - d.sy) / d.z; if (!d.moved && Math.hypot(dx, dy) < 4) return; d.moved = true;
+    d.el.style.left = Math.max(0, Math.round((d.x0 + dx) / 10) * 10) + "px"; d.el.style.top = Math.max(0, Math.round((d.y0 + dy) / 10) * 10) + "px"; e.preventDefault();
+  }, { passive: false });
+  function end(e) {
+    if (!d || (e && e.pointerId !== d.pid)) return; const dd = d; d = null; dd.el.querySelectorAll(".dragging").forEach(x => x.classList.remove("dragging")); dd.el.classList.remove("dragging");
+    const x = parseFloat(dd.el.style.left) || 0, y = parseFloat(dd.el.style.top) || 0;
+    if (!dd.moved) { if (dd.kind === "fix") openFixture(dd.id); return; }
+    if (dd.kind === "tbl") { state.layout.pos[dd.id] = { x, y }; save("Moved " + (state.tables.find(t => t.id === dd.id) || {}).name, { silent: true }); }
+    else { const f = state.layout.fixtures.find(f => f.id === dd.id); if (f) { f.x = x; f.y = y; save("Moved " + f.label, { silent: true }); } }
+    render();
+  }
+  document.body.addEventListener("pointerup", end); document.body.addEventListener("pointercancel", () => end(null));
+})();
 let zoomLevel = 1;
 window.zoom = d => { zoomLevel = Math.min(1.4, Math.max(0.4, Math.round((zoomLevel + d) * 10) / 10)); $("tables").style.zoom = zoomLevel; $("zoomPct").textContent = Math.round(zoomLevel * 100) + "%"; try { localStorage.setItem("partymiZoom", zoomLevel); } catch (e) {} };
-window.renameTable = (id, name) => { const t = state.tables.find(x => x.id === id); if (!t) return; name = name.trim() || t.name; if (name !== t.name) { t.name = name; save(); render(); } };
-window.emptyTable = id => { for (const s in state.seats) if (s.startsWith(id + ":")) delete state.seats[s]; save(); render(); };
-window.clearSeats = () => { if (!confirm("Remove everyone from every table?")) return; state.seats = {}; save(); render(); };
+window.renameTable = (id, name) => { const t = state.tables.find(x => x.id === id); if (!t) return; name = name.trim() || t.name; if (name !== t.name) { const old = t.name; t.name = name; save("Renamed " + old + " → " + name); render(); } };
+window.emptyTable = id => { for (const s in state.seats) if (s.startsWith(id + ":")) delete state.seats[s]; save("Emptied " + (state.tables.find(t => t.id === id) || {}).name); render(); };
+window.clearSeats = () => { if (!confirm("Remove everyone from every table?")) return; state.seats = {}; save("Cleared all seating"); render(); };
 
 /* ---- placement primitives ---- */
 function place(occ, seatKey) {   // move occ to seatKey; swap if occupied
@@ -630,7 +773,7 @@ window.autoSeat = () => {
       pending = next;
     }
   });
-  save(); render();
+  save("Auto-seat (" + Object.keys(state.seats).length + " seated)"); render();
   const left = occupantsToSeat().filter(o => !new Set(Object.values(state.seats)).has(o)).length;
   toast((lockFail.length ? "Locked table full for " + lockFail.join(", ") + " · " : "") + Object.keys(state.seats).length + " seated" + (left ? " · " + left + " still need a seat (add tables)" : " · everyone has a seat"));
 };
@@ -671,7 +814,7 @@ window.autoSeat = () => {
     if (t.kind === "pool") unseat(d.occ);
     else if (t.kind === "seat") { const there = state.seats[t.key]; place(d.occ, t.key); if (there && there !== d.occ) { const a = occInfo(d.occ), b = occInfo(there); toast(d.from ? "Swapped " + shortName(a.name) + " ↔ " + shortName(b.name) : shortName(b.name) + " moved to Unseated"); } }
     else if (t.kind === "table") { const f = firstFree(t.key); if (f) place(d.occ, f); else { toast("That table is full"); return; } }
-    picked = null; save(); render();
+    picked = null; save(moveLabel(d.occ)); render();
   }
   root.addEventListener("pointerup", finish); root.addEventListener("pointercancel", () => finish(null));
   // tap-to-place: tap a chip (pick), then tap a seat / table / pool
@@ -680,12 +823,13 @@ window.autoSeat = () => {
     if (e.target.closest(".chip")) return;   // handled by tapOcc
     const seat = e.target.closest(".seat"), tbl = e.target.closest(".tbl"), pool = e.target.closest("#pool");
     if (seat) place(picked, seat.dataset.seat); else if (tbl) { const f = firstFree(tbl.dataset.table); if (!f) { toast("That table is full"); return; } place(picked, f); } else if (pool) unseat(picked); else return;
-    picked = null; save(); render();
+    const mv = picked; picked = null; save(moveLabel(mv)); render();
   });
 })();
+function moveLabel(occ) { const o = occInfo(occ); const t = tableOfOcc(occ); return (o ? o.name : "Guest") + (t ? " → " + t.name : " → Unseated"); }
 function tapOcc(occ) {
   if (picked && picked !== occ) { // tapping another chip while one is picked = swap / place
-    const s = seatOf(occ); if (s) { place(picked, s); picked = null; save(); render(); return; }
+    const s = seatOf(occ); if (s) { place(picked, s); const mv = picked; picked = null; save(moveLabel(mv)); render(); return; }
   }
   picked = picked === occ ? null : occ; renderSeating();
   if (picked) toast("Now tap a seat, a table, or the Unseated box");
@@ -697,7 +841,7 @@ function tapOcc(occ) {
 window.openTables = () => { $("tableRows").innerHTML = ""; state.tables.forEach(t => addTableRow(t)); if (!state.tables.length) { $("genN").value = 10; $("genS").value = 8; } $("tablesModal").classList.add("active"); };
 window.addTableRow = t => { const d = document.createElement("div"); d.className = "trow"; d.dataset.id = t ? t.id : "t" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); d.innerHTML = `<input class="tn" placeholder="Table name" value="${esc(t ? t.name : "Table " + ($("tableRows").children.length + 1))}"><input class="ts" type="number" min="1" max="30" value="${t ? t.seats : ($("genS").value || 8)}"><button class="x" onclick="this.parentNode.remove()">×</button>`; $("tableRows").appendChild(d); };
 window.generateTables = () => { const n = Math.max(1, Math.min(60, Number($("genN").value) || 10)), s = Math.max(1, Math.min(30, Number($("genS").value) || 8)); $("tableRows").innerHTML = ""; for (let i = 0; i < n; i++) addTableRow({ id: "t" + (i + 1), name: "Table " + (i + 1), seats: s }); };
-window.saveTables = () => { const rows = [...document.querySelectorAll("#tableRows .trow")].map(r => ({ id: r.dataset.id, name: r.querySelector(".tn").value.trim() || "Table", seats: Math.max(1, Math.min(30, Number(r.querySelector(".ts").value) || 8)) })); if (!rows.length) { toast("Add at least one table"); return; } state.tables = rows; closeModal("tablesModal"); save(); render(); };
+window.saveTables = () => { const rows = [...document.querySelectorAll("#tableRows .trow")].map(r => ({ id: r.dataset.id, name: r.querySelector(".tn").value.trim() || "Table", seats: Math.max(1, Math.min(30, Number(r.querySelector(".ts").value) || 8)) })); if (!rows.length) { toast("Add at least one table"); return; } state.tables = rows; closeModal("tablesModal"); save("Tables: " + rows.length + " tables, " + rows.reduce((a, t) => a + t.seats, 0) + " seats"); render(); };
 
 window.openExtra = id => {
   const x = id ? state.extras[id] : null;
@@ -707,13 +851,13 @@ window.openExtra = id => {
   $("xNear").innerHTML = `<option value="">— no preference —</option>` + anchors.map(g => `<option value="${g.cluster}">${esc(g.name)} (${g.group === "dm" ? "DM" : "Exec"})</option>`).join(""); $("xNear").value = x ? (x.near || "") : "";
   $("xDel").style.display = x ? "" : "none"; $("xErr").textContent = ""; $("extraModal").classList.add("active"); setTimeout(() => $("xName").focus(), 60);
 };
-window.saveExtra = () => { const name = $("xName").value.trim(); if (!name) { $("xErr").textContent = "Name is required."; return; } const id = $("xId").value || "x_" + Date.now().toString(36); state.extras[id] = { id, name, group: $("xGroup").value, near: $("xNear").value, role: $("xRole").value.trim() }; closeModal("extraModal"); buildRoster(); save(); render(); };
-window.deleteExtra = () => { const id = $("xId").value; if (!id || !confirm("Remove this guest?")) return; delete state.extras[id]; delete state.guests[id]; unseat("g:" + id); unseat("p:" + id); closeModal("extraModal"); buildRoster(); save(); render(); };
+window.saveExtra = () => { const name = $("xName").value.trim(); if (!name) { $("xErr").textContent = "Name is required."; return; } const id = $("xId").value || "x_" + Date.now().toString(36); state.extras[id] = { id, name, group: $("xGroup").value, near: $("xNear").value, role: $("xRole").value.trim() }; closeModal("extraModal"); buildRoster(); save(($("xId").value ? "Edited guest " : "Added guest ") + name); render(); };
+window.deleteExtra = () => { const id = $("xId").value; if (!id || !confirm("Remove this guest?")) return; delete state.extras[id]; delete state.guests[id]; const nm = (roster[id] || {}).name; unseat("g:" + id); unseat("p:" + id); closeModal("extraModal"); buildRoster(); save("Removed guest " + nm); render(); };
 
 window.openSettings = () => { const s = state.settings; $("sName").value = s.name || ""; $("sWhen").value = s.when || ""; $("sCode").value = s.code || DEFAULT_CODE; const i = s.incl || {}; $("sInclExec").checked = i.exec !== false; $("sInclDM").checked = i.dm !== false; $("sInclGM").checked = i.gm !== false; $("sInclSupport").checked = i.support !== false; $("sInclTech").checked = i.tech !== false; $("setModal").classList.add("active"); };
-window.saveSettings = () => { state.settings = Object.assign({}, state.settings, { name: $("sName").value.trim(), when: $("sWhen").value.trim(), code: $("sCode").value.trim() || DEFAULT_CODE, incl: { exec: $("sInclExec").checked, dm: $("sInclDM").checked, gm: $("sInclGM").checked, support: $("sInclSupport").checked, tech: $("sInclTech").checked } }); closeModal("setModal"); buildRoster(); save(); render(); };
+window.saveSettings = () => { state.settings = Object.assign({}, state.settings, { name: $("sName").value.trim(), when: $("sWhen").value.trim(), code: $("sCode").value.trim() || DEFAULT_CODE, incl: { exec: $("sInclExec").checked, dm: $("sInclDM").checked, gm: $("sInclGM").checked, support: $("sInclSupport").checked, tech: $("sInclTech").checked } }); closeModal("setModal"); buildRoster(); save("Party settings"); render(); };
 window.closeModal = id => $(id).classList.remove("active");
-window.showTab = t => { ["guests", "seating", "checkin"].forEach(k => { $("view" + k[0].toUpperCase() + k.slice(1)).classList.toggle("on", t === k); $("tab" + k[0].toUpperCase() + k.slice(1)).classList.toggle("on", t === k); }); if (t === "checkin") setTimeout(() => $("cq").focus(), 50); };
+window.showTab = t => { ["guests", "seating", "checkin", "budget"].forEach(k => { $("view" + k[0].toUpperCase() + k.slice(1)).classList.toggle("on", t === k); $("tab" + k[0].toUpperCase() + k.slice(1)).classList.toggle("on", t === k); }); if (t === "checkin") setTimeout(() => $("cq").focus(), 50); };
 
 /* ---- locks ---- */
 function lockOptions(key) { const cur = lockOf(key); return `<option value="">🔓 any table</option>` + state.tables.map((t, i) => `<option value="${t.id}" ${t.id === cur ? "selected" : ""}>🔒 ${esc(t.name)}</option>`).join(""); }
@@ -723,7 +867,7 @@ window.setLock = (key, tid) => {
     const t = state.tables.find(x => x.id === tid);
     if (t) { unseat("g:" + key); unseat("p:" + key); const u = ["g:" + key]; if (hasPlus(key)) u.push("p:" + key); const left = placeUnit(t, u); if (left.length) toast(t.name + " is full — lock saved, seat them after making room"); }
   }
-  save(); render(); if ($("locksModal").classList.contains("active")) renderLocks();
+  save(tid ? "Locked " + (roster[key] || {}).name + " → " + ((state.tables.find(x => x.id === tid) || {}).name) : "Unlocked " + (roster[key] || {}).name); render(); if ($("locksModal").classList.contains("active")) renderLocks();
 };
 window.setLockByNumber = (key, v) => {   // "3" -> the 3rd table, or a table whose name contains the text
   v = String(v || "").trim(); if (!v) { setLock(key, ""); return; }
@@ -737,11 +881,84 @@ function renderLocks() {
   $("lockRows").innerHTML = list.map(g => { const cur = lockOf(g.key); const t = cur && state.tables.find(x => x.id === cur); return `<div class="lock-row"><div><b>${cur ? "🔒 " : ""}${esc(g.name)}</b>${hasPlus(g.key) ? " <span class=\"sub\">+1</span>" : ""}<div class="sub">${esc(g.sub)}</div></div><input placeholder="#" value="${t ? esc(String(t.name).replace(/\D/g, "") || t.name) : ""}" onchange="setLockByNumber('${g.key}', this.value)" onkeydown="if(event.key==='Enter'){this.blur();}"><select class="lock-sel ${cur ? "on" : ""}" onchange="setLock('${g.key}', this.value)">${lockOptions(g.key)}</select></div>`; }).join("") || `<div style="padding:12px;color:var(--muted);text-align:center;">No one matches.</div>`;
 }
 
+/* ---- budget ---- */
+const BCATS = ["Venue", "Food & drink", "Entertainment", "Decor", "Gifts & prizes", "Printing", "Staff", "Other"];
+function heads() { return occupantsToSeat().length; }
+function lineTotal(it) { const q = it.perHead ? heads() : (Number(it.qty) || 0); return q * (Number(it.unit) || 0); }
+function renderBudget() {
+  const b = state.budget; const items = b.items || [];
+  const est = items.reduce((a, i) => a + lineTotal(i), 0), paid = items.filter(i => i.paid).reduce((a, i) => a + lineTotal(i), 0);
+  const money = n => "$" + (Math.round(n * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  const hc = heads(); const t = b.target ? (est <= b.target ? "ok" : "bad") : "";
+  $("budgetStrip").innerHTML = `<div class="stat ${t}"><div class="l">Estimated</div><div class="v">${money(est)}</div><div class="s">${b.target ? (est <= b.target ? money(b.target - est) + " under budget" : money(est - b.target) + " OVER budget") : "no budget set"}</div></div>
+    <div class="stat ok"><div class="l">Paid</div><div class="v" style="color:var(--ok)">${money(paid)}</div><div class="s">${items.filter(i => i.paid).length} of ${items.length} lines</div></div>
+    <div class="stat warn"><div class="l">Outstanding</div><div class="v" style="color:var(--warn)">${money(est - paid)}</div><div class="s">still to pay</div></div>
+    <div class="stat"><div class="l">Per head</div><div class="v">${hc ? money(est / hc) : "—"}</div><div class="s">${hc} heads to seat</div></div>`;
+  $("bTarget").value = b.target || ""; $("bHeads").textContent = hc;
+  let h = `<div class="b-head"><div>Item</div><div>Vendor</div><div>Category</div><div>Qty</div><div>Unit $</div><div style="text-align:right">Total</div><div>Paid</div><div>Note</div><div></div></div>`;
+  items.forEach(it => { h += `<div class="b-row ${it.paid ? "paid" : ""}" data-id="${it.id}">
+    <input value="${esc(it.name)}" placeholder="Item" onchange="setB('${it.id}','name',this.value)">
+    <input value="${esc(it.vendor || "")}" placeholder="Vendor" onchange="setB('${it.id}','vendor',this.value)">
+    <select onchange="setB('${it.id}','cat',this.value)">${BCATS.map(c => `<option ${c === it.cat ? "selected" : ""}>${c}</option>`).join("")}</select>
+    <div class="ph">${it.perHead ? `<span>${hc}</span>` : `<input type="number" min="0" step="1" value="${it.qty ?? 1}" onchange="setB('${it.id}','qty',this.value)" style="width:58px;">`}<label title="Quantity follows the heads-to-seat count"><input type="checkbox" ${it.perHead ? "checked" : ""} onchange="setB('${it.id}','perHead',this.checked)" style="width:auto;">/head</label></div>
+    <input type="number" min="0" step="0.01" value="${it.unit ?? ""}" placeholder="0.00" onchange="setB('${it.id}','unit',this.value)">
+    <div class="tot">${money(lineTotal(it))}</div>
+    <div><label class="tog"><input type="checkbox" ${it.paid ? "checked" : ""} onchange="setB('${it.id}','paid',this.checked)"></label></div>
+    <input value="${esc(it.note || "")}" placeholder="Deposit due, contact…" onchange="setB('${it.id}','note',this.value)">
+    <button class="x" title="Delete line" onclick="delB('${it.id}')">×</button></div>`; });
+  if (!items.length) h += `<div style="padding:16px;text-align:center;color:var(--muted);font-size:.85rem;">No line items yet. Add the venue, catering per head, DJ, gifts…</div>`;
+  h += `<div class="b-foot"><span>Estimated <b>${money(est)}</b></span><span>Paid <b style="color:var(--ok)">${money(paid)}</b></span><span>Outstanding <b style="color:var(--warn)">${money(est - paid)}</b></span></div>`;
+  $("budgetList").innerHTML = h;
+}
+window.addBudgetItem = () => { state.budget.items = (state.budget.items || []).concat([{ id: "b" + Date.now().toString(36), name: "", vendor: "", cat: "Other", qty: 1, unit: 0, perHead: false, paid: false, note: "" }]); save("Budget line added", { silent: true }); renderBudget(); const r = document.querySelector("#budgetList .b-row:last-of-type input"); if (r) r.focus(); };
+window.setB = (id, f, v) => { const it = (state.budget.items || []).find(x => x.id === id); if (!it) return; it[f] = (f === "qty" || f === "unit") ? Number(v) || 0 : v; save("Budget: " + (it.name || "line") + (f === "paid" ? (v ? " paid" : " unpaid") : " updated"), { silent: true }); renderBudget(); };
+window.delB = id => { const it = (state.budget.items || []).find(x => x.id === id); if (!it || !confirm("Delete " + (it.name || "this line") + "?")) return; state.budget.items = state.budget.items.filter(x => x.id !== id); save("Budget line removed: " + it.name); renderBudget(); };
+window.setBudgetTarget = v => { state.budget.target = Number(v) || 0; save("Budget target " + state.budget.target, { silent: true }); renderBudget(); };
+window.exportBudget = () => { const rows = [["Item", "Vendor", "Category", "Qty", "Unit", "Total", "Paid", "Note"]].concat((state.budget.items || []).map(i => [i.name, i.vendor || "", i.cat || "", i.perHead ? heads() + " (per head)" : i.qty, i.unit, lineTotal(i).toFixed(2), i.paid ? "yes" : "no", i.note || ""])); const csv = rows.map(r => r.map(c => '"' + String(c ?? "").replace(/"/g, '""') + '"').join(",")).join("\n"); const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = "PartyMi_budget.csv"; a.click(); };
+
+/* ---- kiosk ---- */
+let kioskOn = false, kLetter = null, kSel = null, kTimer = null;
+window.startKiosk = () => { kioskOn = true; kLetter = null; kSel = null; try { sessionStorage.setItem("partymiKiosk", "1"); } catch (e) {} $("kiosk").style.display = "flex"; renderKiosk(); if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {}); };
+window.exitKiosk = () => { const c = prompt("Access code to exit kiosk mode:"); if (c !== (state.settings.code || DEFAULT_CODE)) return; kioskOn = false; try { sessionStorage.removeItem("partymiKiosk"); } catch (e) {} $("kiosk").style.display = "none"; if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); };
+function kLast(name) { const p = String(name || "").trim().split(/\s+/); return p[p.length - 1] || ""; }
+function kioskGuests() { return Object.keys(roster).filter(k => attending(k)).map(k => roster[k]); }
+window.kPick = l => { kLetter = l; kSel = null; renderKiosk(); };
+window.kBack = () => { clearTimeout(kTimer); if (kSel) kSel = null; else kLetter = null; renderKiosk(); };
+window.kSelect = key => {
+  kSel = key; const cols = checkCols(); const first = cols[0];
+  ["g:" + key].concat(hasPlus(key) ? ["p:" + key] : []).forEach(occ => { const c = Object.assign({}, state.checkin[occ] || {}); if (!c[first]) { c[first] = true; c["_t_" + first] = Date.now(); c._kiosk = true; state.checkin[occ] = c; } });
+  save("Kiosk check-in — " + roster[key].name, { silent: true, noUndo: true }); renderKiosk();
+  clearTimeout(kTimer); kTimer = setTimeout(() => { kSel = null; kLetter = null; renderKiosk(); }, 25000);
+};
+function renderKiosk() {
+  if (!kioskOn) return; const box = $("kiosk"); const title = state.settings.name || "Welcome!";
+  const guests = kioskGuests();
+  let h = `<div class="kh">${esc(title)}</div>`;
+  if (!kLetter) {
+    const have = new Set(guests.map(g => kLast(g.name).charAt(0).toUpperCase()));
+    h += `<div class="kt">Tap the first letter of your <u>last name</u></div><div class="letters">${"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(l => `<button ${have.has(l) ? "" : "disabled"} onclick="kPick('${l}')">${l}</button>`).join("")}</div>`;
+  } else if (!kSel) {
+    const list = guests.filter(g => kLast(g.name).charAt(0).toUpperCase() === kLetter).sort((a, b) => kLast(a.name).localeCompare(kLast(b.name)) || a.name.localeCompare(b.name));
+    const first = checkCols()[0];
+    h += `<div class="kt">Last names starting with ${kLetter} — tap your name</div><div class="names">${list.map(g => { const t = tableOfOcc("g:" + g.key); const done = (state.checkin["g:" + g.key] || {})[first]; return `<button onclick="kSelect('${g.key}')"><div class="n">${esc(kLast(g.name))}, ${esc(g.name.replace(new RegExp("\\s*" + kLast(g.name).replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$"), ""))}</div><div class="s">${esc(g.sub)}${hasPlus(g.key) ? " · +1" : ""}</div>${done ? `<div class="done">✓ already checked in${t ? " · " + esc(t.name) : ""}</div>` : ""}</button>`; }).join("") || `<div class="ksub">Nobody with that letter — ask the check-in desk.</div>`}</div><button class="kback" onclick="kBack()">← Back</button>`;
+  } else {
+    const g = roster[kSel]; const t = tableOfOcc("g:" + kSel); const cols = checkCols(); const ck = state.checkin["g:" + kSel] || {};
+    const need = cols.slice(1).filter(c => !ck[c]);
+    h += `<div class="welcome"><div class="w1">Welcome${hasPlus(kSel) ? " to you and your guest" : ""},</div><div class="w2">${esc(g.name)}</div>
+      ${t ? `<div class="tl">You're at</div><div class="tnum">${esc(t.name)}</div>` : `<div class="tl">Seating</div><div class="tnum" style="font-size:1.6rem;">Open seating — ask the host</div>`}
+      ${need.length ? `<div class="pick"><b>Before you sit down, please pick up</b>${need.map(c => `<div>☐ ${esc(c)}</div>`).join("")}<div style="font-size:.85rem;font-weight:600;color:var(--muted);margin-top:4px;">at the check-in desk</div></div>` : `<div class="allgood">✓ You're all set — enjoy the party!</div>`}
+      <button class="kdone" onclick="kBack(); kBack();">Done</button></div>`;
+  }
+  h += `<button class="kexit" onclick="exitKiosk()">⚙</button>`;
+  box.innerHTML = h;
+}
+window.addEventListener("online", () => $("offline").classList.remove("show")); window.addEventListener("offline", () => $("offline").classList.add("show"));
+
 /* ---- check-in ---- */
 let checkFilter = "all";
 function checkCols() { return (state.settings.checkCols && state.settings.checkCols.length) ? state.settings.checkCols : DEFAULT_COLS; }
 window.setCheckFilter = f => { checkFilter = f; document.querySelectorAll("#cfSeg button").forEach(b => b.classList.toggle("on", b.dataset.f === f)); renderCheckin(); };
-window.toggleCheck = (occ, col) => { const c = Object.assign({}, state.checkin[occ] || {}); c[col] = !c[col]; c[col] ? (c["_t_" + col] = Date.now()) : delete c["_t_" + col]; state.checkin[occ] = c; save(); renderCheckin(); };
+window.toggleCheck = (occ, col) => { const c = Object.assign({}, state.checkin[occ] || {}); c[col] = !c[col]; c[col] ? (c["_t_" + col] = Date.now()) : delete c["_t_" + col]; state.checkin[occ] = c; const o = occInfo(occ); save((c[col] ? "✓ " : "✗ ") + col + " — " + (o ? o.name : occ), { silent: true }); renderCheckin(); };
 function renderCheckin() {
   const cols = checkCols(); const q = ($("cq").value || "").trim().toLowerCase();
   const all = occupantsToSeat().map(occInfo).filter(Boolean);
@@ -757,7 +974,7 @@ function renderCheckin() {
   $("checkList").innerHTML = h;
 }
 window.openCheckCols = () => { $("colsText").value = checkCols().join("\n"); $("colsModal").classList.add("active"); };
-window.saveCheckCols = () => { const cols = $("colsText").value.split("\n").map(x => x.trim()).filter(Boolean); if (!cols.length) { toast("Add at least one column"); return; } state.settings.checkCols = cols; closeModal("colsModal"); save(); render(); };
+window.saveCheckCols = () => { const cols = $("colsText").value.split("\n").map(x => x.trim()).filter(Boolean); if (!cols.length) { toast("Add at least one column"); return; } state.settings.checkCols = cols; closeModal("colsModal"); save("Check-in columns: " + cols.join(", ")); render(); };
 
 /* ---- print ---- */
 window.printChart = () => {
@@ -765,6 +982,14 @@ window.printChart = () => {
   let h = `<h1>${esc(s.name || "Seating Chart")}</h1><div class="pm">${esc(s.when || "")}${s.when ? " · " : ""}${Object.keys(state.seats).length} seated · ${state.tables.length} tables · printed ${new Date().toLocaleDateString()}</div><div class="ptables">`;
   state.tables.forEach(t => { h += `<div class="ptbl"><h3>${esc(t.name)} <span style="font-weight:400;font-size:9pt;color:#666">(${t.seats})</span></h3><ol>`; for (let i = 0; i < t.seats; i++) { const o = state.seats[t.id + ":" + i] && occInfo(state.seats[t.id + ":" + i]); h += `<li>${o ? esc(o.name) + (o.plus ? "" : ` <span class="em">— ${esc(o.sub)}</span>`) : '<span class="em">open</span>'}</li>`; } h += `</ol></div>`; });
   h += `</div>`;
+  if (state.layout.on && state.tables.length) {   // floor plan
+    const pos = t => state.layout.pos[t.id] || autoPos(t);
+    const W = Math.max(...state.tables.map(t => pos(t).x + 300), ...state.layout.fixtures.map(f => f.x + f.w), 800), H = Math.max(...state.tables.map(t => pos(t).y + 300), ...state.layout.fixtures.map(f => f.y + f.h), 500);
+    let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-height:7.5in;margin:10pt 0;page-break-before:always;" xmlns="http://www.w3.org/2000/svg">`;
+    state.layout.fixtures.forEach(f => { svg += f.shape === "round" ? `<ellipse cx="${f.x + f.w / 2}" cy="${f.y + f.h / 2}" rx="${f.w / 2}" ry="${f.h / 2}" fill="#fff7ed" stroke="#9a3412" stroke-width="3"/>` : `<rect x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}" rx="12" fill="#fff7ed" stroke="#9a3412" stroke-width="3"/>`; svg += `<text x="${f.x + f.w / 2}" y="${f.y + f.h / 2 + 8}" text-anchor="middle" font-size="22" font-weight="700" fill="#9a3412">${esc(f.label)}</text>`; });
+    state.tables.forEach(t => { const R = Math.max(88, Math.round(t.seats * 96 / (2 * Math.PI)) + 8); const D = R * 2 + 100; const c = { x: pos(t).x + D / 2, y: pos(t).y + D / 2 }; svg += `<circle cx="${c.x}" cy="${c.y}" r="${R - 20}" fill="#eef0fb" stroke="#251d7f" stroke-width="3"/><text x="${c.x}" y="${c.y + 2}" text-anchor="middle" font-size="26" font-weight="700" fill="#251d7f">${esc(t.name)}</text><text x="${c.x}" y="${c.y + 28}" text-anchor="middle" font-size="18" fill="#555">${t.seats} seats</text>`; for (let i = 0; i < t.seats; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / t.seats; svg += `<circle cx="${c.x + R * Math.cos(a)}" cy="${c.y + R * Math.sin(a)}" r="9" fill="${state.seats[t.id + ":" + i] ? "#251d7f" : "#fff"}" stroke="#251d7f" stroke-width="2"/>`; } });
+    h += svg + `</svg>`;
+  }
   const rows = Object.keys(state.seats).map(k => { const o = occInfo(state.seats[k]); const t = state.tables.find(x => x.id === k.split(":")[0]); return o && t ? { name: o.name, table: t.name } : null; }).filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
   h += `<div class="plist"><div class="ph"><span>Guest</span><span>Table</span></div>${rows.map(r => `<div><span>${esc(r.name)}</span><span>${esc(r.table)}</span></div>`).join("")}</div>`;
   h += `<div class="cards">${rows.map(r => `<div class="card"><div class="n">${esc(r.name)}</div><div class="t">${esc(r.table)}</div></div>`).join("")}</div>`;
@@ -775,7 +1000,10 @@ window.printChart = () => {
 window.submitGate = () => { if ($("gateInput").value.trim() !== (state.settings.code || DEFAULT_CODE)) { $("gateErr").textContent = "Incorrect access code."; $("gateInput").value = ""; return; } try { sessionStorage.setItem("partymiOk", "1"); } catch (e) {} $("gate").classList.add("hidden"); };
 window.signOut = () => { try { sessionStorage.removeItem("partymiOk"); } catch (e) {} $("gateInput").value = ""; $("gate").classList.remove("hidden"); };
 (function init() {
-  let ok = false; try { ok = sessionStorage.getItem("partymiOk") === "1"; } catch (e) {}
+  try { const c = localStorage.getItem("partymiState"); if (c) { const d = JSON.parse(c); state = Object.assign(state, d); state.layout = Object.assign({ on: false, pos: {}, fixtures: [] }, d.layout || {}); state.budget = Object.assign({ target: 0, items: [] }, d.budget || {}); } const f = localStorage.getItem("partymiFindmi"); if (f) { findmi = JSON.parse(f); buildRoster(); } } catch (e) {}
+  if (!navigator.onLine) $("offline").classList.add("show");
+  render();
+  let ok = false; try { ok = sessionStorage.getItem("partymiOk") === "1"; if (sessionStorage.getItem("partymiKiosk") === "1") { ok = true; kioskOn = true; $("kiosk").style.display = "flex"; renderKiosk(); } } catch (e) {}
   if (ok) $("gate").classList.add("hidden"); else setTimeout(() => $("gateInput").focus(), 100);
   try { const z = parseFloat(localStorage.getItem("partymiZoom")); if (z) { zoomLevel = z - 0.1; zoom(0.1); } else if (innerWidth < 640) { zoomLevel = 0.7; zoom(0); } } catch (e) {}
   if (window.FS) startFirestore(); else window.addEventListener("firebase-ready", startFirestore, { once: true });
