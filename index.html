@@ -114,6 +114,22 @@
   .legend { display: flex; gap: 10px; flex-wrap: wrap; font-size: .68rem; color: var(--muted); margin-top: 12px; }
   .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
 
+  /* ---- check-in ---- */
+  .ck-prog { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .ck-prog .cp { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; min-width: 130px; flex: 1; box-shadow: var(--shadow-sm); }
+  .ck-prog .cp .l { font-size: .62rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .ck-prog .cp .v { font-weight: 800; font-size: 1.1rem; } .ck-prog .cp .bar { height: 6px; border-radius: 999px; background: var(--line); margin-top: 4px; overflow: hidden; } .ck-prog .cp .bar i { display: block; height: 100%; background: var(--ok); border-radius: 999px; }
+  .ck-head, .ck-row { display: grid; grid-template-columns: minmax(160px, 1fr) repeat(var(--cols, 4), minmax(64px, 90px)); gap: 6px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  #checkList { overflow: visible; }
+  .ck-head { border-radius: 12px 12px 0 0; background: var(--surface-2); font-size: .64rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); position: sticky; top: 56px; z-index: 5; text-align: center; }
+  .ck-head > :first-child { text-align: left; }
+  .ck-row:last-child { border-bottom: none; } .ck-row.done { background: #f0fdf4; } .ck-row.plus .nm { font-weight: 600; color: var(--ink-2); }
+  .ck-row .nm { font-weight: 700; } .ck-row .sub { font-size: .7rem; color: var(--muted); }
+  .ck { display: flex; align-items: center; justify-content: center; }
+  .ck button { width: 40px; height: 36px; border-radius: 8px; border: 1.5px solid var(--line-2); background: #fff; font-size: 1rem; color: var(--faint); }
+  .ck button.on { background: var(--ok); border-color: var(--ok); color: #fff; }
+  @media (max-width: 640px) { .ck-head, .ck-row { grid-template-columns: minmax(120px, 1fr) repeat(var(--cols, 4), minmax(44px, 60px)); padding: 6px 8px; gap: 4px; } .ck-head { top: 98px; font-size: .56rem; } .ck button { width: 38px; height: 34px; } }
+
   /* ---- modal ---- */
   .backdrop { position: fixed; inset: 0; background: rgba(15,23,42,.45); display: none; align-items: center; justify-content: center; z-index: 500; padding: 12px; }
   .backdrop.active { display: flex; }
@@ -188,7 +204,7 @@
 
 <header>
   <div class="brand"><h1>DPM PartyMi</h1><span id="partyName">Guest list &amp; seating</span></div>
-  <div class="tabs"><button class="on" id="tabGuests" onclick="showTab('guests')">Guest list</button><button id="tabSeating" onclick="showTab('seating')">Seating</button></div>
+  <div class="tabs"><button class="on" id="tabGuests" onclick="showTab('guests')">Guest list</button><button id="tabSeating" onclick="showTab('seating')">Seating</button><button id="tabCheckin" onclick="showTab('checkin')">Check-in</button></div>
   <div class="hdr-actions">
     <span class="conn" id="conn"><i></i><span>Connecting…</span></span>
     <button class="hbtn" onclick="openSettings()">⚙ Party</button>
@@ -234,8 +250,19 @@
       </div>
     </div>
   </section>
+  <!-- CHECK-IN -->
+  <section class="view" id="viewCheckin">
+    <div class="toolbar">
+      <input type="search" id="cq" placeholder="Find a guest…" oninput="renderCheckin()" autocomplete="off">
+      <div class="seg" id="cfSeg"><button class="on" data-f="all" onclick="setCheckFilter('all')">All</button><button data-f="pending" onclick="setCheckFilter('pending')">Not arrived</button><button data-f="done" onclick="setCheckFilter('done')">Arrived</button></div>
+      <span style="flex:1"></span>
+      <button class="btn" onclick="openCheckCols()">Columns</button>
+    </div>
+    <div class="ck-prog" id="ckProg"></div>
+    <div class="group" id="checkList"></div>
+  </section>
 </main>
-<footer>DPM PartyMi · v1.0 · Guests come live from DPM FindMi (read-only) · RSVPs, +1s, tables and seating are saved in Firestore (partymi)</footer>
+<footer>DPM PartyMi · v1.1 · Guests come live from DPM FindMi (read-only) · RSVPs, +1s, tables and seating are saved in Firestore (partymi)</footer>
 
 <!-- Extra guest modal -->
 <div class="backdrop" id="extraModal"><div class="modal">
@@ -287,6 +314,12 @@
   <div class="mf"><button class="btn" onclick="closeModal('setModal')">Cancel</button><button class="btn primary" onclick="saveSettings()">Save</button></div>
 </div></div>
 
+<!-- Check-in columns modal -->
+<div class="backdrop" id="colsModal"><div class="modal">
+  <div class="mh"><h3>Check-in columns</h3><button class="x" onclick="closeModal('colsModal')">×</button></div>
+  <div class="mb"><p style="font-size:.76rem;color:var(--muted);margin-bottom:8px;">One per line. The first column counts as "arrived".</p><textarea id="colsText" rows="6" style="width:100%;"></textarea></div>
+  <div class="mf"><button class="btn" onclick="closeModal('colsModal')">Cancel</button><button class="btn primary" onclick="saveCheckCols()">Save</button></div>
+</div></div>
 <div id="toast"></div>
 <div id="printArea"></div>
 
@@ -325,7 +358,8 @@ const GROUPS = {
    ============================================================ */
 let findmi = null;
 let roster = {};        // key -> guest (from FindMi + extras), rebuilt on every change
-let state = { tables: [], seats: {}, guests: {}, extras: {}, settings: { name: "", when: "", code: DEFAULT_CODE, onlyYes: false, incl: { exec: true, dm: true, gm: true, support: true, tech: true } } };
+const DEFAULT_COLS = ["Arrived", "Ticket", "Badge", "Goodie bag"];
+let state = { tables: [], seats: {}, guests: {}, extras: {}, checkin: {}, settings: { name: "", when: "", code: DEFAULT_CODE, onlyYes: false, incl: { exec: true, dm: true, gm: true, support: true, tech: true } } };
 let filter = "all";
 let picked = null;      // occupant key selected by tap
 let drag = null;
@@ -401,7 +435,7 @@ function pruneSeats() {   // drop occupants who no longer attend / tables that n
 function save() { clearTimeout(saveT); saveT = setTimeout(async () => { try { await FS.setDoc(FS.doc(FS.db, "party", "main"), state); } catch (e) { toast("Save failed: " + e.message); } }, 250); }
 function startFirestore() {
   FS.onSnapshot(FS.doc(FS.db, "party", "main"), snap => {
-    if (snap.exists()) { const d = snap.data(); state = Object.assign({ tables: [], seats: {}, guests: {}, extras: {} }, d); state.settings = Object.assign({ name: "", when: "", code: DEFAULT_CODE, onlyYes: false, incl: {} }, d.settings || {}); }
+    if (snap.exists()) { const d = snap.data(); state = Object.assign({ tables: [], seats: {}, guests: {}, extras: {}, checkin: {} }, d); state.checkin = state.checkin || {}; state.settings = Object.assign({ name: "", when: "", code: DEFAULT_CODE, onlyYes: false, incl: {} }, d.settings || {}); }
     $("conn").classList.add("ok"); $("conn").lastChild.textContent = "FindMi + Firestore";
     if (!drag) { buildRoster(); render(); }
   }, e => { $("conn").lastChild.textContent = "Firestore error: " + e.code; });
@@ -414,7 +448,7 @@ async function loadFindMi() {
 /* ============================================================
    RENDER
    ============================================================ */
-function render() { pruneSeats(); renderStrip(); renderGuests(); renderSeating(); $("partyName").textContent = state.settings.name || "Guest list & seating"; $("onlyYes").checked = !!state.settings.onlyYes; }
+function render() { pruneSeats(); renderStrip(); renderGuests(); renderSeating(); renderCheckin(); $("partyName").textContent = state.settings.name || "Guest list & seating"; $("onlyYes").checked = !!state.settings.onlyYes; }
 function renderStrip() {
   const keys = Object.keys(roster).filter(k => !hidden(k));
   const yes = keys.filter(k => rsvp(k) === "yes"), no = keys.filter(k => rsvp(k) === "no"), inv = keys.filter(k => rsvp(k) === "invited");
@@ -646,7 +680,29 @@ window.deleteExtra = () => { const id = $("xId").value; if (!id || !confirm("Rem
 window.openSettings = () => { const s = state.settings; $("sName").value = s.name || ""; $("sWhen").value = s.when || ""; $("sCode").value = s.code || DEFAULT_CODE; const i = s.incl || {}; $("sInclExec").checked = i.exec !== false; $("sInclDM").checked = i.dm !== false; $("sInclGM").checked = i.gm !== false; $("sInclSupport").checked = i.support !== false; $("sInclTech").checked = i.tech !== false; $("setModal").classList.add("active"); };
 window.saveSettings = () => { state.settings = Object.assign({}, state.settings, { name: $("sName").value.trim(), when: $("sWhen").value.trim(), code: $("sCode").value.trim() || DEFAULT_CODE, incl: { exec: $("sInclExec").checked, dm: $("sInclDM").checked, gm: $("sInclGM").checked, support: $("sInclSupport").checked, tech: $("sInclTech").checked } }); closeModal("setModal"); buildRoster(); save(); render(); };
 window.closeModal = id => $(id).classList.remove("active");
-window.showTab = t => { $("viewGuests").classList.toggle("on", t === "guests"); $("viewSeating").classList.toggle("on", t === "seating"); $("tabGuests").classList.toggle("on", t === "guests"); $("tabSeating").classList.toggle("on", t === "seating"); };
+window.showTab = t => { ["guests", "seating", "checkin"].forEach(k => { $("view" + k[0].toUpperCase() + k.slice(1)).classList.toggle("on", t === k); $("tab" + k[0].toUpperCase() + k.slice(1)).classList.toggle("on", t === k); }); if (t === "checkin") setTimeout(() => $("cq").focus(), 50); };
+
+/* ---- check-in ---- */
+let checkFilter = "all";
+function checkCols() { return (state.settings.checkCols && state.settings.checkCols.length) ? state.settings.checkCols : DEFAULT_COLS; }
+window.setCheckFilter = f => { checkFilter = f; document.querySelectorAll("#cfSeg button").forEach(b => b.classList.toggle("on", b.dataset.f === f)); renderCheckin(); };
+window.toggleCheck = (occ, col) => { const c = Object.assign({}, state.checkin[occ] || {}); c[col] = !c[col]; c[col] ? (c["_t_" + col] = Date.now()) : delete c["_t_" + col]; state.checkin[occ] = c; save(); renderCheckin(); };
+function renderCheckin() {
+  const cols = checkCols(); const q = ($("cq").value || "").trim().toLowerCase();
+  const all = occupantsToSeat().map(occInfo).filter(Boolean);
+  const arrived = o => !!(state.checkin[o.occ] || {})[cols[0]];
+  let list = all.filter(o => checkFilter === "all" || (checkFilter === "done") === arrived(o));
+  if (q) list = list.filter(o => (o.name + " " + o.sub).toLowerCase().includes(q));
+  list.sort((a, b) => { const an = a.plus ? roster[a.key].name : a.name, bn = b.plus ? roster[b.key].name : b.name; return an.localeCompare(bn) || (a.plus ? 1 : -1); });   // +1 right under their guest
+  $("ckProg").innerHTML = cols.map(c => { const n = all.filter(o => (state.checkin[o.occ] || {})[c]).length; return `<div class="cp"><div class="l">${esc(c)}</div><div class="v">${n} <span style="font-weight:500;font-size:.75rem;color:var(--muted)">/ ${all.length}</span></div><div class="bar"><i style="width:${all.length ? n / all.length * 100 : 0}%"></i></div></div>`; }).join("");
+  let h = `<div class="ck-head" style="--cols:${cols.length}"><div>Guest</div>${cols.map(c => `<div>${esc(c)}</div>`).join("")}</div>`;
+  list.forEach(o => { const ck = state.checkin[o.occ] || {}; const t = tableOfOcc(o.occ);
+    h += `<div class="ck-row ${arrived(o) ? "done" : ""} ${o.plus ? "plus" : ""}" style="--cols:${cols.length}"><div><div class="nm">${o.plus ? "↳ " : ""}${esc(o.name)}</div><div class="sub">${esc(o.sub)}${t ? " · " + esc(t.name) : ""}</div></div>${cols.map(c => `<div class="ck"><button class="${ck[c] ? "on" : ""}" onclick="toggleCheck('${o.occ}','${esc(c)}')" title="${ck[c] ? new Date(ck["_t_" + c] || 0).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : ""}">${ck[c] ? "✓" : ""}</button></div>`).join("")}</div>`; });
+  if (!list.length) h += `<div style="padding:16px;text-align:center;color:var(--muted);font-size:.85rem;">No guests match.</div>`;
+  $("checkList").innerHTML = h;
+}
+window.openCheckCols = () => { $("colsText").value = checkCols().join("\n"); $("colsModal").classList.add("active"); };
+window.saveCheckCols = () => { const cols = $("colsText").value.split("\n").map(x => x.trim()).filter(Boolean); if (!cols.length) { toast("Add at least one column"); return; } state.settings.checkCols = cols; closeModal("colsModal"); save(); render(); };
 
 /* ---- print ---- */
 window.printChart = () => {
