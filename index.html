@@ -1,1 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#1b1660">
+<title>DPM PartyMi — Guest List & Seating</title>
+<link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-title" content="PartyMi" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Mulish:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #251d7f; --navy-800: #1b1660; --red: #e8091b; --gold: #d4a017;
+    --bg: #eaecf2; --surface: #fff; --surface-2: #f7f8fb; --tint: #eef0fb; --tint-2: #e0e7ff;
+    --line: #dee1e8; --line-2: #cbd5e1; --ink: #14161f; --ink-2: #334155; --muted: #64748b; --faint: #8a93a6;
+    --ok: #15803d; --ok-bg: #dcfce7; --warn: #b45309; --warn-bg: #fef3c7; --bad: #b91c1c; --bad-bg: #fee2e2;
+    --font-display: 'Cinzel', serif; --font-sans: 'Mulish', system-ui, sans-serif;
+    --shadow-sm: 0 1px 3px rgba(20,16,74,.08), 0 1px 2px rgba(20,16,74,.06);
+    --shadow-md: 0 4px 12px rgba(20,16,74,.10), 0 2px 4px rgba(20,16,74,.06);
+    /* group colours */
+    --g-exec: #7c3aed; --g-dm: #2b64c6; --g-gm: #0f766e; --g-support: #b45309; --g-tech: #be123c; --g-extra: #475569; --g-plus: #94a3b8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { font-family: var(--font-sans); color: var(--ink); background: var(--bg); font-size: 14px; line-height: 1.4; min-height: 100dvh; display: flex; flex-direction: column; -webkit-tap-highlight-color: transparent; }
+  button { font-family: inherit; cursor: pointer; }
+  input, select, textarea { font-family: inherit; font-size: 14px; color: var(--ink); background: #fff; border: 1px solid var(--line-2); border-radius: 6px; padding: 7px 10px; }
+  input:focus, select:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(37,29,127,.12); }
 
+  header { background: var(--navy); border-bottom: 3px solid var(--red); padding: 8px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 50; }
+  .brand h1 { font-family: var(--font-display); font-size: 1rem; letter-spacing: .06em; text-transform: uppercase; color: #fff; line-height: 1.1; }
+  .brand span { font-size: .72rem; color: #c7c3f1; font-style: italic; }
+  .tabs { display: flex; background: rgba(255,255,255,.1); border-radius: 999px; padding: 3px; }
+  .tabs button { border: none; background: none; color: #c7c3f1; font-weight: 700; font-size: .8rem; padding: 6px 16px; border-radius: 999px; }
+  .tabs button.on { background: #fff; color: var(--navy); }
+  .hdr-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .hbtn { background: rgba(255,255,255,.1); color: #fff; border: 1px solid rgba(255,255,255,.25); border-radius: 999px; padding: 6px 12px; font-size: .78rem; font-weight: 600; white-space: nowrap; }
+  .hbtn:hover { background: rgba(255,255,255,.2); }
+  .conn { font-size: .7rem; color: #c7c3f1; display: flex; align-items: center; gap: 5px; }
+  .conn i { width: 7px; height: 7px; border-radius: 50%; background: #f87171; display: inline-block; } .conn.ok i { background: #4ade80; }
+
+  main { flex: 1; width: 100%; max-width: 1600px; margin: 0 auto; padding: 14px 16px 60px; }
+  .view { display: none; } .view.on { display: block; }
+
+  .strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-bottom: 12px; }
+  .stat { background: #fff; border: 1px solid var(--line); border-top: 3px solid var(--navy); border-radius: 10px; padding: 8px 12px; box-shadow: var(--shadow-sm); }
+  .stat .l { font-size: .62rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .stat .v { font-size: 1.4rem; font-weight: 800; line-height: 1.1; } .stat .s { font-size: .7rem; color: var(--muted); }
+  .stat.ok { border-top-color: var(--ok); } .stat.warn { border-top-color: #f59e0b; } .stat.bad { border-top-color: var(--red); }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 5px; font-size: .78rem; font-weight: 700; padding: 6px 12px; border-radius: 7px; border: 1px solid var(--line-2); background: #fff; color: var(--navy); white-space: nowrap; }
+  .btn:hover { background: var(--tint); border-color: #9d97e6; }
+  .btn.primary { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .btn.danger { color: var(--bad); border-color: #fca5a5; } .btn.danger:hover { background: var(--bad-bg); }
+  .btn.xs { font-size: .7rem; padding: 3px 8px; } .btn:disabled { opacity: .45; cursor: default; }
+  .x { background: none; border: none; font-size: 1.2rem; color: var(--muted); }
+
+  /* ---- guest list ---- */
+  .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+  .toolbar input[type=search] { flex: 1 1 220px; max-width: 420px; border-radius: 999px; padding: 8px 14px; }
+  .seg { display: inline-flex; border: 1px solid var(--line-2); border-radius: 999px; overflow: hidden; background: #fff; }
+  .seg button { border: none; background: none; padding: 5px 11px; font-size: .74rem; font-weight: 700; color: var(--muted); }
+  .seg button.on { background: var(--navy); color: #fff; }
+  .seg.rsvp button.on.yes { background: var(--ok); } .seg.rsvp button.on.no { background: var(--bad); }
+  .group { background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-sm); margin-bottom: 10px; overflow: hidden; }
+  .group > .gh { display: flex; align-items: center; gap: 10px; padding: 9px 14px; background: var(--surface-2); border-bottom: 1px solid var(--line); cursor: pointer; }
+  .group > .gh .ttl { font-weight: 800; font-size: .9rem; } .group > .gh .cnt { font-size: .74rem; color: var(--muted); }
+  .group > .gh .sw { width: 10px; height: 10px; border-radius: 50%; }
+  .group.closed .rows { display: none; }
+  .row { display: grid; grid-template-columns: minmax(180px, 1.3fr) auto auto minmax(140px, 1fr) minmax(120px, 1fr) auto; gap: 8px 12px; align-items: center; padding: 8px 14px; border-bottom: 1px solid var(--line); }
+  .row:last-child { border-bottom: none; }
+  .row:hover { background: var(--tint); }
+  .row.off { opacity: .55; }
+  .row .nm { font-weight: 700; } .row .sub { font-size: .72rem; color: var(--muted); }
+  .row input { padding: 4px 8px; font-size: .78rem; width: 100%; }
+  .tog { display: inline-flex; align-items: center; gap: 6px; font-size: .74rem; font-weight: 700; color: var(--muted); cursor: pointer; white-space: nowrap; }
+  .tog input { width: 16px; height: 16px; accent-color: var(--navy); margin: 0; }
+  .tbl-chip { font-size: .68rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--tint-2); color: var(--navy); white-space: nowrap; }
+  .tbl-chip.none { background: var(--line); color: var(--muted); }
+
+  /* ---- seating ---- */
+  .seatwrap { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 12px; align-items: start; }
+  .pool { background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-sm); position: sticky; top: 64px; max-height: calc(100dvh - 80px); display: flex; flex-direction: column; }
+  .pool .ph { padding: 10px 12px; border-bottom: 1px solid var(--line); background: var(--surface-2); border-radius: 12px 12px 0 0; }
+  .pool .ph b { font-size: .8rem; } .pool .ph .sub { font-size: .7rem; color: var(--muted); }
+  .pool .pl { overflow-y: auto; padding: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start; min-height: 120px; }
+  .pool.over { outline: 3px dashed var(--navy); outline-offset: -3px; }
+  .pool .gh2 { width: 100%; font-size: .62rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin: 6px 2px 0; }
+  .floor { background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-sm); padding: 14px; min-height: 400px; overflow-x: auto; }
+  .zoom { display: inline-flex; gap: 2px; align-items: center; font-size: .72rem; color: var(--muted); } .zoom button { padding: 3px 8px; }
+  .floor .fh { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+  .floor .fh .sp { flex: 1; }
+  .tables { display: flex; flex-wrap: wrap; gap: 26px 22px; justify-content: center; align-items: flex-start; }
+  .tbl { position: relative; flex-shrink: 0; }
+  .tbl .disc { position: absolute; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #fff, var(--tint-2)); border: 2px solid var(--navy); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 8px; transition: box-shadow .12s; }
+  .tbl .disc .tn { font-family: var(--font-display); font-weight: 700; font-size: .85rem; color: var(--navy); line-height: 1.1; cursor: text; }
+  .tbl .disc .tc { font-size: .66rem; color: var(--muted); margin-top: 3px; }
+  .tbl .disc .tools { display: flex; gap: 4px; margin-top: 5px; }
+  .tbl.over .disc { box-shadow: 0 0 0 5px rgba(37,29,127,.25); }
+  .seat { position: absolute; width: 92px; height: 44px; margin: -22px 0 0 -46px; border-radius: 10px; border: 1.5px dashed var(--line-2); background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: .62rem; color: var(--faint); font-weight: 700; }
+  .seat.over { border-style: solid; border-color: var(--navy); background: var(--tint); box-shadow: 0 0 0 3px rgba(37,29,127,.2); }
+  .chip { width: 100%; height: 100%; border-radius: 9px; border: 1.5px solid var(--line-2); border-left-width: 5px; background: #fff; display: flex; flex-direction: column; justify-content: center; padding: 2px 6px; cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; box-shadow: var(--shadow-sm); overflow: hidden; }
+  .chip .cn { font-size: .68rem; font-weight: 800; color: var(--ink); line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chip .cs { font-size: .56rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chip.plus { border-style: dashed; background: #f8fafc; }
+  .chip.picked { outline: 3px solid var(--gold); }
+  .chip.pending { border-color: #fcd34d; }
+  .pool .chip { width: 124px; height: 40px; }
+  .ghost { position: fixed; z-index: 2000; pointer-events: none; width: 124px; height: 40px; opacity: .92; transform: rotate(-2deg) scale(1.05); }
+  .ghost .chip { cursor: grabbing; }
+  .legend { display: flex; gap: 10px; flex-wrap: wrap; font-size: .68rem; color: var(--muted); margin-top: 12px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+
+  /* ---- modal ---- */
+  .backdrop { position: fixed; inset: 0; background: rgba(15,23,42,.45); display: none; align-items: center; justify-content: center; z-index: 500; padding: 12px; }
+  .backdrop.active { display: flex; }
+  .modal { background: #fff; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,.3); width: 100%; max-width: 520px; max-height: calc(100dvh - 24px); display: flex; flex-direction: column; overflow: hidden; }
+  .modal .mh { padding: 10px 14px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; background: var(--surface-2); }
+  .modal .mh h3 { font-family: var(--font-display); font-size: .82rem; letter-spacing: .04em; text-transform: uppercase; color: var(--navy); }
+  .modal .mb { padding: 14px; overflow-y: auto; }
+  .modal .mf { padding: 10px 14px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 8px; background: var(--surface-2); }
+  .fg { margin-bottom: 10px; } .fg label { display: block; font-size: .72rem; font-weight: 700; color: var(--muted); margin-bottom: 3px; } .fg input, .fg select { width: 100%; }
+  .err { color: var(--bad); font-size: .76rem; margin-top: 6px; min-height: 1em; }
+  .trow { display: grid; grid-template-columns: 1fr 90px 36px; gap: 6px; margin-bottom: 6px; align-items: center; }
+  .sect { font-size: .66rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 14px 0 6px; }
+
+  .gate { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, var(--navy), #0f172a); padding: 20px; }
+  .gate.hidden { display: none; }
+  .gate .box { background: #fff; border-radius: 12px; padding: 28px 26px; width: 100%; max-width: 340px; text-align: center; box-shadow: 0 18px 50px rgba(0,0,0,.35); }
+  .gate .logo { font-family: var(--font-display); font-weight: 700; color: var(--navy); letter-spacing: .06em; font-size: 1.1rem; }
+  .gate input { width: 100%; text-align: center; letter-spacing: .28em; font-size: 1rem; margin: 14px 0 10px; } .gate .btn { width: 100%; }
+
+  #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #111827; color: #fff; padding: 9px 16px; border-radius: 999px; font-size: .82rem; font-weight: 600; z-index: 4000; opacity: 0; pointer-events: none; transition: opacity .18s; }
+  #toast.show { opacity: 1; }
+  footer { font-size: .7rem; color: var(--muted); text-align: center; padding: 12px; }
+
+  /* ---- print ---- */
+  #printArea { display: none; }
+  @media print {
+    body > *:not(#printArea) { display: none !important; }
+    #printArea { display: block; font-family: var(--font-sans); color: #000; }
+    #printArea h1 { font-family: var(--font-display); font-size: 18pt; margin-bottom: 2pt; }
+    #printArea .pm { font-size: 9pt; color: #555; margin-bottom: 12pt; }
+    .ptables { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10pt; }
+    .ptbl { border: 1pt solid #333; border-radius: 8pt; padding: 7pt 9pt; break-inside: avoid; }
+    .ptbl h3 { font-size: 11pt; margin-bottom: 3pt; } .ptbl ol { padding-left: 16pt; font-size: 9pt; } .ptbl li { margin: 1pt 0; }
+    .ptbl .em { color: #888; font-style: italic; }
+    .plist { columns: 3; column-gap: 18pt; font-size: 9.5pt; page-break-before: always; }
+    .plist div { display: flex; justify-content: space-between; border-bottom: .5pt dotted #aaa; padding: 2pt 0; break-inside: avoid; }
+    .plist .ph { font-weight: 800; border-bottom: 1pt solid #000; margin-top: 6pt; }
+    .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; page-break-before: always; }
+    .card { border: .5pt dashed #999; height: 2.5in; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; break-inside: avoid; }
+    .card .n { font-family: var(--font-display); font-size: 18pt; } .card .t { font-size: 11pt; color: #444; margin-top: 4pt; }
+  }
+
+  /* ---- mobile ---- */
+  @media (max-width: 900px) {
+    .seatwrap { grid-template-columns: 1fr; }
+    .pool { position: static; max-height: 240px; }
+    .row { grid-template-columns: 1fr auto; }
+    .row .rsvp { grid-column: 1; } .row .p1 { grid-column: 2; grid-row: 1; }
+    .row .p1n, .row .note { grid-column: 1 / -1; }
+    .row .tbl-chip { grid-column: 2; grid-row: 2; justify-self: end; }
+  }
+  @media (max-width: 640px) {
+    header { padding: 8px 12px; gap: 8px; } .brand span { display: none; } .conn span { display: none; }
+    .tabs { order: 3; width: 100%; } .tabs button { flex: 1; }
+    main { padding: 10px 12px 60px; }
+    .strip { grid-template-columns: repeat(3, 1fr); gap: 6px; } .stat .s { display: none; } .stat .v { font-size: 1.1rem; }
+    .tables { gap: 18px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="gate" class="gate">
+  <div class="box">
+    <div class="logo">DPM PartyMi</div>
+    <p style="font-size:.8rem;color:var(--muted);margin-top:6px;">Guest list &amp; seating. Contact IT Support for access.</p>
+    <input type="password" id="gateInput" inputmode="numeric" placeholder="Access code" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();submitGate();}">
+    <div class="err" id="gateErr"></div>
+    <button class="btn primary" onclick="submitGate()">Open</button>
+  </div>
+</div>
+
+<header>
+  <div class="brand"><h1>DPM PartyMi</h1><span id="partyName">Guest list &amp; seating</span></div>
+  <div class="tabs"><button class="on" id="tabGuests" onclick="showTab('guests')">Guest list</button><button id="tabSeating" onclick="showTab('seating')">Seating</button></div>
+  <div class="hdr-actions">
+    <span class="conn" id="conn"><i></i><span>Connecting…</span></span>
+    <button class="hbtn" onclick="openSettings()">⚙ Party</button>
+    <button class="hbtn" onclick="printChart()">🖨 Print</button>
+    <button class="hbtn" onclick="signOut()" title="Sign out">⏻</button>
+  </div>
+</header>
+
+<main>
+  <div class="strip" id="strip"></div>
+
+  <!-- GUEST LIST -->
+  <section class="view on" id="viewGuests">
+    <div class="toolbar">
+      <input type="search" id="q" placeholder="Search guests, stores, departments…" oninput="renderGuests()">
+      <div class="seg" id="filtSeg"><button class="on" data-f="all" onclick="setFilter('all')">All</button><button data-f="yes" onclick="setFilter('yes')">Yes</button><button data-f="invited" onclick="setFilter('invited')">No reply</button><button data-f="no" onclick="setFilter('no')">No</button><button data-f="hidden" onclick="setFilter('hidden')">Hidden</button></div>
+      <span style="flex:1"></span>
+      <button class="btn" onclick="bulkPlusOne(true)">+1 for everyone</button>
+      <button class="btn" onclick="bulkPlusOne(false)">Clear all +1s</button>
+      <button class="btn primary" onclick="openExtra(null)">+ Add guest</button>
+    </div>
+    <div id="guestList"></div>
+  </section>
+
+  <!-- SEATING -->
+  <section class="view" id="viewSeating">
+    <div class="seatwrap">
+      <div class="pool" id="pool">
+        <div class="ph"><b>Unseated</b> <span id="poolCount"></span><div class="sub">Drag onto a seat, or tap a name then tap a seat. Drop here to unseat.</div></div>
+        <div class="pl" id="poolList"></div>
+      </div>
+      <div class="floor">
+        <div class="fh">
+          <button class="btn primary" onclick="autoSeat()">✨ Auto-seat</button>
+          <button class="btn" onclick="openTables()">🪑 Tables</button>
+          <label class="tog"><input type="checkbox" id="onlyYes" onchange="setOnlyYes(this.checked)"> Seat confirmed (Yes) only</label>
+          <span class="sp"></span>
+          <span class="zoom"><button class="btn xs" onclick="zoom(-0.1)">−</button><span id="zoomPct">100%</span><button class="btn xs" onclick="zoom(0.1)">+</button></span>
+          <button class="btn danger" onclick="clearSeats()">Clear seating</button>
+        </div>
+        <div class="tables" id="tables"></div>
+        <div class="legend" id="legend"></div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer>DPM PartyMi · v1.0 · Guests come live from DPM FindMi (read-only) · RSVPs, +1s, tables and seating are saved in Firestore (partymi)</footer>
+
+<!-- Extra guest modal -->
+<div class="backdrop" id="extraModal"><div class="modal">
+  <div class="mh"><h3 id="extraTitle">Add guest</h3><button class="x" onclick="closeModal('extraModal')">×</button></div>
+  <div class="mb">
+    <input type="hidden" id="xId">
+    <div class="fg"><label>Name</label><input id="xName" placeholder="Full name"></div>
+    <div class="fg"><label>Group (seated with)</label><select id="xGroup"></select></div>
+    <div class="fg"><label>Seat near (optional — a DM or Director)</label><select id="xNear"><option value="">—</option></select></div>
+    <div class="fg"><label>Role / note shown on list</label><input id="xRole" placeholder="e.g. Owner's family, Vendor — Ecolab"></div>
+    <div class="err" id="xErr"></div>
+  </div>
+  <div class="mf"><button class="btn danger" id="xDel" onclick="deleteExtra()" style="margin-right:auto;">Delete</button><button class="btn" onclick="closeModal('extraModal')">Cancel</button><button class="btn primary" onclick="saveExtra()">Save</button></div>
+</div></div>
+
+<!-- Tables modal -->
+<div class="backdrop" id="tablesModal"><div class="modal">
+  <div class="mh"><h3>Tables</h3><button class="x" onclick="closeModal('tablesModal')">×</button></div>
+  <div class="mb">
+    <div class="sect" style="margin-top:0">Generate</div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.8rem;">
+      <label><input id="genN" type="number" min="1" max="60" value="10" style="width:64px;padding:4px 6px;"> tables ×</label>
+      <label><input id="genS" type="number" min="2" max="20" value="8" style="width:64px;padding:4px 6px;"> seats</label>
+      <button class="btn xs" onclick="generateTables()">Generate</button>
+    </div>
+    <p style="font-size:.7rem;color:var(--muted);margin-top:4px;">Generate replaces the table list (existing seating is kept where table numbers still exist).</p>
+    <div class="sect">Customize</div>
+    <div id="tableRows"></div>
+    <button class="btn xs" onclick="addTableRow()">+ Add table</button>
+  </div>
+  <div class="mf"><button class="btn" onclick="closeModal('tablesModal')">Cancel</button><button class="btn primary" onclick="saveTables()">Save tables</button></div>
+</div></div>
+
+<!-- Settings modal -->
+<div class="backdrop" id="setModal"><div class="modal">
+  <div class="mh"><h3>Party</h3><button class="x" onclick="closeModal('setModal')">×</button></div>
+  <div class="mb">
+    <div class="fg"><label>Party name</label><input id="sName" placeholder="DPM Holiday Party 2026"></div>
+    <div class="fg"><label>Date / venue line (printed on the chart)</label><input id="sWhen" placeholder="Saturday, Dec 13 · The Grand Hall, Dallas"></div>
+    <div class="fg"><label>Access code</label><input id="sCode"></div>
+    <div class="sect">Include from FindMi</div>
+    <label class="tog" style="display:flex;margin:4px 0;"><input type="checkbox" id="sInclExec"> VP &amp; Directors</label>
+    <label class="tog" style="display:flex;margin:4px 0;"><input type="checkbox" id="sInclDM"> District Managers</label>
+    <label class="tog" style="display:flex;margin:4px 0;"><input type="checkbox" id="sInclGM"> General Managers (all divisions)</label>
+    <label class="tog" style="display:flex;margin:4px 0;"><input type="checkbox" id="sInclSupport"> Support Staff</label>
+    <label class="tog" style="display:flex;margin:4px 0;"><input type="checkbox" id="sInclTech"> Repair Technicians</label>
+    <div class="err" id="sErr"></div>
+  </div>
+  <div class="mf"><button class="btn" onclick="closeModal('setModal')">Cancel</button><button class="btn primary" onclick="saveSettings()">Save</button></div>
+</div></div>
+
+<div id="toast"></div>
+<div id="printArea"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  const app = initializeApp({
+    apiKey: "AIzaSyBk_jtI46d_5BZTK-mXIP_78R-X59Bo0oc",
+    authDomain: "partymi.firebaseapp.com",
+    projectId: "partymi",
+    storageBucket: "partymi.firebasestorage.app",
+    messagingSenderId: "9170595743",
+    appId: "1:9170595743:web:36a2106053c9389cd117aa"
+  });
+  window.FS = { db: getFirestore(app), doc, setDoc, onSnapshot };
+  window.dispatchEvent(new Event("firebase-ready"));
+</script>
+
+<script>
+/* ============================================================
+   CONFIG
+   ============================================================ */
+const FINDMI_URL = "https://alignment-api-khaki.vercel.app/api/dpm-alignment";
+const DEFAULT_CODE = "76051";
+const GROUPS = {
+  exec:    { label: "VP & Directors",      color: "var(--g-exec)" },
+  dm:      { label: "District Managers",   color: "var(--g-dm)" },
+  gm:      { label: "General Managers",    color: "var(--g-gm)" },
+  support: { label: "Support Staff",       color: "var(--g-support)" },
+  tech:    { label: "Repair Technicians",  color: "var(--g-tech)" },
+  extra:   { label: "Other guests",        color: "var(--g-extra)" }
+};
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let findmi = null;
+let roster = {};        // key -> guest (from FindMi + extras), rebuilt on every change
+let state = { tables: [], seats: {}, guests: {}, extras: {}, settings: { name: "", when: "", code: DEFAULT_CODE, onlyYes: false, incl: { exec: true, dm: true, gm: true, support: true, tech: true } } };
+let filter = "all";
+let picked = null;      // occupant key selected by tap
+let drag = null;
+let saveT = null, _toastT = null;
+const $ = id => document.getElementById(id);
+function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
+function toast(m) { const t = $("toast"); t.textContent = m; t.classList.add("show"); clearTimeout(_toastT); _toastT = setTimeout(() => t.classList.remove("show"), 2000); }
+function titleCase(w) { return w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w; }
+function personName(raw) {
+  let s = String(raw || "").trim(); const fix = t => t.split("-").map(titleCase).join("-");
+  if (s.includes(",")) { const [last, ...rest] = s.split(","); return (rest.join(",").trim().split(/\s+/).map(fix).join(" ") + " " + last.trim().split(/\s+/).map(fix).join(" ")).trim(); }
+  return s.split(/\s+/).map(w => /^[A-Z]{2,}$/.test(w) || /^[a-z]+$/.test(w) ? fix(w) : w).join(" ");
+}
+function firstName(n) { return String(n || "").trim().split(/\s+/)[0] || ""; }
+function shortName(n) { const p = String(n || "").trim().split(/\s+/); return p.length > 1 ? p[0] + " " + p[p.length - 1][0] + "." : p[0] || ""; }
+function digits(v) { return String(v || "").replace(/\D/g, "").replace(/^0+/, ""); }
+function divisionOf(r) {
+  const d = String(r.division || "").trim(); if (d) return d;
+  const n = r.storeName || "";
+  if (/burger\s*king|\bbk\b/i.test(n)) return "bk"; if (/subway/i.test(n)) return "subway"; if (/car\s*wash|\bwash\b/i.test(n)) return "carwash"; if (/\bstop\b|quick\s*stop|travel\s*stop|truck\s*stop/i.test(n)) return "cstore"; return "other";
+}
+const DIV_LABEL = { bk: "Burger King", subway: "Subway", cstore: "C-Store", carwash: "Car Wash", other: "Other" };
+function storeShort(r) {
+  const n = digits(r.storeNumber) || ((String(r.storeName || "").match(/\b(\d{3,6})\b/) || [])[1] || "");
+  let s = String(r.storeName || "").replace(/burger\s*king|subway|paradise|quick\s*stop|car\s*wash/ig, "").replace(/#?\s*\d{3,6}/g, "").replace(/^[-\s•.,/#]+|[-\s•.,/#]+$/g, "").replace(/\s+/g, " ").trim();
+  return (s || DIV_LABEL[divisionOf(r)]) + (n ? " #" + n : "");
+}
+function coachIds(r) { if (Array.isArray(r.assignedAreaCoachIds)) return r.assignedAreaCoachIds.filter(Boolean); if (r.assignedAreaCoachIds && typeof r.assignedAreaCoachIds === "object") return Object.values(r.assignedAreaCoachIds).filter(Boolean); return r.assignedAreaCoachId ? [r.assignedAreaCoachId] : []; }
+function managersOf(r) { if (Array.isArray(r.managers) && r.managers.length) return r.managers; const o = []; if ((r.storeManager || "").trim()) o.push({ name: r.storeManager, title: "GM", phone: r.managerCell }); return o; }
+
+/* ============================================================
+   ROSTER (FindMi + extras)
+   ============================================================ */
+function buildRoster() {
+  roster = {};
+  const d = findmi || {}, incl = state.settings.incl || {};
+  const dirs = d.directors || {}, coaches = d.areaCoaches || {}, staff = d.vps || {}, techs = d.repairTechnicians || {}, rests = d.restaurants || {};
+  if (incl.exec !== false) {
+    Object.values(staff).filter(s => /executive/i.test(s.department || "")).forEach(s => roster["ss_" + s.id] = { key: "ss_" + s.id, name: personName(s.name), group: "exec", sub: s.title || s.department || "Executive", cluster: "exec", phone: s.phone, email: s.email });
+    Object.values(dirs).forEach(x => roster["do_" + x.id] = { key: "do_" + x.id, name: personName(x.name), group: "exec", sub: "Director of Operations", cluster: "exec", phone: x.phone, email: x.email });
+  }
+  if (incl.dm !== false) Object.values(coaches).forEach(c => roster["dm_" + c.id] = { key: "dm_" + c.id, name: personName(c.name), group: "dm", sub: "District Manager", cluster: "dm_" + c.id, phone: c.phone, email: c.email });
+  if (incl.support !== false) Object.values(staff).filter(s => !/executive/i.test(s.department || "")).forEach(s => { const dept = (s.department || "Support").trim(); roster["ss_" + s.id] = { key: "ss_" + s.id, name: personName(s.name), group: "support", sub: [s.title, dept].filter(Boolean).join(" · "), cluster: "support_" + dept.toLowerCase(), phone: s.phone, email: s.email }; });
+  if (incl.tech !== false) Object.values(techs).forEach(t => roster["tech_" + t.id] = { key: "tech_" + t.id, name: personName(t.name), group: "tech", sub: "Repair Technician" + (t.zone ? " · " + t.zone : ""), cluster: "tech", phone: t.phone, email: t.email });
+  if (incl.gm !== false) Object.values(rests).forEach(r => {
+    const gm = managersOf(r).find(m => /^gm$/i.test(m.title || "") && (m.name || "").trim());
+    if (!gm) return;
+    const dm = coachIds(r).find(id => coaches[id]);
+    const div = divisionOf(r);
+    roster["gm_" + r.id] = { key: "gm_" + r.id, name: personName(gm.name), group: "gm", sub: "GM · " + storeShort(r) + " · " + (DIV_LABEL[div] || div), cluster: dm ? "dm_" + dm : (dirs[r.assignedDirectorId] ? "do_" + r.assignedDirectorId : "gm_other"), phone: gm.phone, division: div };
+  });
+  Object.values(state.extras || {}).forEach(x => roster[x.id] = { key: x.id, name: x.name, group: x.group || "extra", sub: x.role || GROUPS[x.group || "extra"].label, cluster: x.near || (x.group === "extra" ? "extra" : x.group === "exec" ? "exec" : x.group === "tech" ? "tech" : x.group === "support" ? "support_other" : "extra"), extra: true });
+}
+function gInfo(key) { return (state.guests || {})[key] || {}; }
+function rsvp(key) { return gInfo(key).rsvp || "invited"; }
+function hasPlus(key) { return !!gInfo(key).plusOne; }
+function hidden(key) { return !!gInfo(key).hidden; }
+function plusName(key) { const g = roster[key]; return gInfo(key).plusOneName || ("+1 · " + firstName(g ? g.name : "")); }
+// Occupant keys: "g:<key>" guest, "p:<key>" their +1
+function occInfo(occ) { const [t, key] = [occ.slice(0, 1), occ.slice(2)]; const g = roster[key]; if (!g) return null; return t === "p" ? { occ, key, plus: true, name: plusName(key), sub: "+1 of " + shortName(g.name), group: g.group, cluster: g.cluster } : { occ, key, plus: false, name: g.name, sub: g.sub, group: g.group, cluster: g.cluster }; }
+function attending(key) { if (hidden(key)) return false; const r = rsvp(key); return state.settings.onlyYes ? r === "yes" : r !== "no"; }
+function occupantsToSeat() { const out = []; Object.keys(roster).forEach(k => { if (!attending(k)) return; out.push("g:" + k); if (hasPlus(k)) out.push("p:" + k); }); return out; }
+function seatOf(occ) { for (const s in state.seats) if (state.seats[s] === occ) return s; return null; }
+function tableOfOcc(occ) { const s = seatOf(occ); return s ? state.tables.find(t => t.id === s.split(":")[0]) : null; }
+function pruneSeats() {   // drop occupants who no longer attend / tables that no longer exist
+  const valid = new Set(occupantsToSeat()); const tids = new Set(state.tables.map(t => t.id));
+  for (const s in state.seats) { const [tid, i] = s.split(":"); const t = state.tables.find(x => x.id === tid); if (!tids.has(tid) || !valid.has(state.seats[s]) || Number(i) >= t.seats) delete state.seats[s]; }
+}
+
+/* ============================================================
+   PERSISTENCE
+   ============================================================ */
+function save() { clearTimeout(saveT); saveT = setTimeout(async () => { try { await FS.setDoc(FS.doc(FS.db, "party", "main"), state); } catch (e) { toast("Save failed: " + e.message); } }, 250); }
+function startFirestore() {
+  FS.onSnapshot(FS.doc(FS.db, "party", "main"), snap => {
+    if (snap.exists()) { const d = snap.data(); state = Object.assign({ tables: [], seats: {}, guests: {}, extras: {} }, d); state.settings = Object.assign({ name: "", when: "", code: DEFAULT_CODE, onlyYes: false, incl: {} }, d.settings || {}); }
+    $("conn").classList.add("ok"); $("conn").lastChild.textContent = "FindMi + Firestore";
+    if (!drag) { buildRoster(); render(); }
+  }, e => { $("conn").lastChild.textContent = "Firestore error: " + e.code; });
+}
+async function loadFindMi() {
+  try { const r = await fetch(FINDMI_URL + "?_=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw new Error("HTTP " + r.status); findmi = await r.json(); buildRoster(); render(); }
+  catch (e) { $("conn").lastChild.textContent = "FindMi unreachable"; $("guestList").innerHTML = `<div class="group"><div style="padding:14px;color:var(--muted)">Couldn't load FindMi (${esc(e.message)}). <a href="#" onclick="location.reload();return false;">Reload</a></div></div>`; }
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render() { pruneSeats(); renderStrip(); renderGuests(); renderSeating(); $("partyName").textContent = state.settings.name || "Guest list & seating"; $("onlyYes").checked = !!state.settings.onlyYes; }
+function renderStrip() {
+  const keys = Object.keys(roster).filter(k => !hidden(k));
+  const yes = keys.filter(k => rsvp(k) === "yes"), no = keys.filter(k => rsvp(k) === "no"), inv = keys.filter(k => rsvp(k) === "invited");
+  const plus = keys.filter(k => rsvp(k) !== "no" && hasPlus(k)).length;
+  const heads = occupantsToSeat().length, seats = state.tables.reduce((a, t) => a + t.seats, 0), seated = Object.keys(state.seats).length;
+  const t = seats >= heads ? "ok" : "bad";
+  $("strip").innerHTML = `
+    <div class="stat"><div class="l">Invited</div><div class="v">${keys.length}</div><div class="s">${inv.length} no reply</div></div>
+    <div class="stat ok"><div class="l">Yes</div><div class="v c-ok" style="color:var(--ok)">${yes.length}</div><div class="s">${no.length} declined</div></div>
+    <div class="stat"><div class="l">+1s</div><div class="v">${plus}</div><div class="s">on attending guests</div></div>
+    <div class="stat ${t}"><div class="l">Heads to seat</div><div class="v">${heads}</div><div class="s">${state.settings.onlyYes ? "Yes only" : "Yes + no reply"}</div></div>
+    <div class="stat ${t}"><div class="l">Seats</div><div class="v">${seats}</div><div class="s">${state.tables.length} tables${seats < heads ? " · " + (heads - seats) + " short" : ""}</div></div>
+    <div class="stat ${seated === heads && heads ? "ok" : "warn"}"><div class="l">Seated</div><div class="v">${seated}</div><div class="s">${heads - seated} unseated</div></div>`;
+}
+window.setFilter = f => { filter = f; document.querySelectorAll("#filtSeg button").forEach(b => b.classList.toggle("on", b.dataset.f === f)); renderGuests(); };
+const closedGroups = new Set();
+window.toggleGroup = g => { closedGroups.has(g) ? closedGroups.delete(g) : closedGroups.add(g); renderGuests(); };
+function renderGuests() {
+  const q = ($("q").value || "").trim().toLowerCase();
+  const list = Object.values(roster).filter(g => {
+    if (filter === "hidden") { if (!hidden(g.key)) return false; } else { if (hidden(g.key)) return false; if (filter !== "all" && rsvp(g.key) !== filter) return false; }
+    if (q && !(g.name + " " + g.sub + " " + plusName(g.key)).toLowerCase().includes(q)) return false; return true;
+  });
+  let h = "";
+  Object.keys(GROUPS).forEach(gk => {
+    const rows = list.filter(g => g.group === gk).sort((a, b) => a.name.localeCompare(b.name));
+    if (!rows.length) return;
+    const yes = rows.filter(g => rsvp(g.key) === "yes").length;
+    h += `<div class="group ${closedGroups.has(gk) ? "closed" : ""}"><div class="gh" onclick="toggleGroup('${gk}')"><span class="sw" style="background:${GROUPS[gk].color}"></span><span class="ttl">${GROUPS[gk].label}</span><span class="cnt">${rows.length} · ${yes} yes</span></div><div class="rows">`;
+    rows.forEach(g => {
+      const r = rsvp(g.key), p = hasPlus(g.key), tb = tableOfOcc("g:" + g.key);
+      h += `<div class="row ${r === "no" ? "off" : ""}">
+        <div><div class="nm">${esc(g.name)}${g.extra ? ` <button class="btn xs" onclick="openExtra('${g.key}')">✎</button>` : ""}</div><div class="sub">${esc(g.sub)}</div></div>
+        <div class="seg rsvp"><button class="${r === "invited" ? "on" : ""}" onclick="setRsvp('${g.key}','invited')">?</button><button class="${r === "yes" ? "on yes" : ""}" onclick="setRsvp('${g.key}','yes')">Yes</button><button class="${r === "no" ? "on no" : ""}" onclick="setRsvp('${g.key}','no')">No</button></div>
+        <label class="tog p1"><input type="checkbox" ${p ? "checked" : ""} onchange="setPlus('${g.key}', this.checked)"> +1</label>
+        <input class="p1n" placeholder="+1 name" value="${esc(gInfo(g.key).plusOneName || "")}" ${p ? "" : "disabled"} onchange="setField('${g.key}','plusOneName',this.value)">
+        <input class="note" placeholder="Note (dietary, seating wish…)" value="${esc(gInfo(g.key).note || "")}" onchange="setField('${g.key}','note',this.value)">
+        <div style="display:flex;gap:6px;align-items:center;justify-content:flex-end;"><span class="tbl-chip ${tb ? "" : "none"}">${tb ? esc(tb.name) : "unseated"}</span>${g.extra ? "" : `<button class="btn xs" title="${hidden(g.key) ? "Show on list" : "Hide from list (not invited)"}" onclick="setField('${g.key}','hidden',${hidden(g.key) ? "false" : "true"})">${hidden(g.key) ? "↩" : "✕"}</button>`}</div>
+      </div>`;
+    });
+    h += `</div></div>`;
+  });
+  $("guestList").innerHTML = h || `<div class="group"><div style="padding:16px;color:var(--muted);text-align:center;">No guests match.</div></div>`;
+}
+window.setRsvp = (k, v) => { state.guests[k] = Object.assign({}, gInfo(k), { rsvp: v }); save(); render(); };
+window.setPlus = (k, v) => { state.guests[k] = Object.assign({}, gInfo(k), { plusOne: v }); save(); render(); };
+window.setField = (k, f, v) => { state.guests[k] = Object.assign({}, gInfo(k), { [f]: v }); save(); render(); };
+window.bulkPlusOne = on => { if (!confirm(on ? "Turn on a +1 for every guest on the list?" : "Remove the +1 from every guest?")) return; Object.keys(roster).forEach(k => { if (!hidden(k)) state.guests[k] = Object.assign({}, gInfo(k), { plusOne: on }); }); save(); render(); };
+window.setOnlyYes = v => { state.settings.onlyYes = v; save(); render(); };
+
+/* ---- seating ---- */
+function chip(occ, extraCls) {
+  const o = occInfo(occ); if (!o) return "";
+  const pend = !o.plus && rsvp(o.key) === "invited";
+  return `<div class="chip ${o.plus ? "plus" : ""} ${pend ? "pending" : ""} ${picked === occ ? "picked" : ""} ${extraCls || ""}" data-occ="${occ}" style="border-left-color:${GROUPS[o.group].color}" title="${esc(o.name)} — ${esc(o.sub)}${pend ? " (no reply yet)" : ""}"><div class="cn">${esc(o.name)}</div><div class="cs">${esc(o.sub)}</div></div>`;
+}
+function renderSeating() {
+  const all = occupantsToSeat(); const seatedSet = new Set(Object.values(state.seats));
+  const unseated = all.filter(o => !seatedSet.has(o));
+  $("poolCount").textContent = "(" + unseated.length + ")";
+  let ph = ""; let lastG = null;
+  unseated.map(occInfo).sort((a, b) => Object.keys(GROUPS).indexOf(a.group) - Object.keys(GROUPS).indexOf(b.group) || a.cluster.localeCompare(b.cluster) || a.name.localeCompare(b.name)).forEach(o => {
+    if (o.group !== lastG) { ph += `<div class="gh2">${GROUPS[o.group].label}</div>`; lastG = o.group; }
+    ph += chip(o.occ);
+  });
+  $("poolList").innerHTML = ph || `<div style="padding:10px;font-size:.78rem;color:var(--muted);width:100%;text-align:center;">Everyone is seated 🎉</div>`;
+  let th = "";
+  state.tables.forEach(t => {
+    const R = Math.max(88, Math.round(t.seats * 96 / (2 * Math.PI)) + 8);
+    const D = R * 2 + 100, cx = D / 2, cy = D / 2, inner = (R - 50) * 2;
+    const used = Array.from({ length: t.seats }).filter((_, i) => state.seats[t.id + ":" + i]).length;
+    th += `<div class="tbl" data-table="${t.id}" style="width:${D}px;height:${D}px;">
+      <div class="disc" style="width:${inner}px;height:${inner}px;left:${cx - inner / 2}px;top:${cy - inner / 2}px;"><div class="tn" contenteditable="true" spellcheck="false" onblur="renameTable('${t.id}', this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${esc(t.name)}</div><div class="tc">${used}/${t.seats}</div><div class="tools"><button class="btn xs" title="Empty this table" onclick="emptyTable('${t.id}')">empty</button></div></div>`;
+    for (let i = 0; i < t.seats; i++) {
+      const a = -Math.PI / 2 + i * 2 * Math.PI / t.seats;
+      const x = cx + R * Math.cos(a), y = cy + R * Math.sin(a);
+      const occ = state.seats[t.id + ":" + i];
+      th += `<div class="seat" data-seat="${t.id}:${i}" style="left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;">${occ ? chip(occ) : (i + 1)}</div>`;
+    }
+    th += `</div>`;
+  });
+  $("tables").innerHTML = th || `<div style="padding:30px;color:var(--muted);text-align:center;width:100%;">No tables yet — click <b>🪑 Tables</b> to set how many tables and seats.</div>`;
+  $("legend").innerHTML = Object.keys(GROUPS).map(g => `<span><i style="background:${GROUPS[g].color}"></i>${GROUPS[g].label}</span>`).join("") + `<span><i style="background:#fff;border:1.5px dashed #94a3b8"></i>+1</span><span><i style="background:#fff;border:1.5px solid #fcd34d"></i>no reply yet</span>`;
+}
+let zoomLevel = 1;
+window.zoom = d => { zoomLevel = Math.min(1.4, Math.max(0.4, Math.round((zoomLevel + d) * 10) / 10)); $("tables").style.zoom = zoomLevel; $("zoomPct").textContent = Math.round(zoomLevel * 100) + "%"; try { localStorage.setItem("partymiZoom", zoomLevel); } catch (e) {} };
+window.renameTable = (id, name) => { const t = state.tables.find(x => x.id === id); if (!t) return; name = name.trim() || t.name; if (name !== t.name) { t.name = name; save(); render(); } };
+window.emptyTable = id => { for (const s in state.seats) if (s.startsWith(id + ":")) delete state.seats[s]; save(); render(); };
+window.clearSeats = () => { if (!confirm("Remove everyone from every table?")) return; state.seats = {}; save(); render(); };
+
+/* ---- placement primitives ---- */
+function place(occ, seatKey) {   // move occ to seatKey; swap if occupied
+  const from = seatOf(occ); const there = state.seats[seatKey];
+  if (there === occ) return;
+  if (there) { if (from) state.seats[from] = there; else delete state.seats[seatKey]; }
+  else if (from) delete state.seats[from];
+  state.seats[seatKey] = occ;
+  if (there && !from) { /* displaced occupant goes to pool */ }
+}
+function unseat(occ) { const s = seatOf(occ); if (s) delete state.seats[s]; }
+function firstFree(tid) { const t = state.tables.find(x => x.id === tid); for (let i = 0; i < t.seats; i++) if (!state.seats[tid + ":" + i]) return tid + ":" + i; return null; }
+function freeCount(t) { let n = 0; for (let i = 0; i < t.seats; i++) if (!state.seats[t.id + ":" + i]) n++; return n; }
+
+/* ---- auto seat ---- */
+window.autoSeat = () => {
+  if (!state.tables.length) { openTables(); return; }
+  const seatedSet = new Set(Object.values(state.seats));
+  const units = {};   // cluster -> [[occ,(occ)]...]
+  Object.keys(roster).forEach(k => {
+    if (!attending(k)) return;
+    const u = []; if (!seatedSet.has("g:" + k)) u.push("g:" + k); if (hasPlus(k) && !seatedSet.has("p:" + k)) u.push("p:" + k);
+    if (!u.length) return;
+    const c = roster[k].cluster; (units[c] = units[c] || []).push(u);
+  });
+  // cluster order: exec, DM clusters (largest first), gm_other, support depts, tech, extra
+  const order = Object.keys(units).sort((a, b) => {
+    const rank = c => c === "exec" ? 0 : c.startsWith("dm_") || c.startsWith("do_") ? 1 : c === "gm_other" ? 2 : c.startsWith("support") ? 3 : c === "tech" ? 4 : 5;
+    const size = c => units[c].reduce((n, u) => n + u.length, 0);
+    return rank(a) - rank(b) || size(b) - size(a);
+  });
+  // prefer tables where this cluster already has people (so a re-run fills around manual placements)
+  const clusterOfTable = {}; for (const s in state.seats) { const o = occInfo(state.seats[s]); if (o) (clusterOfTable[s.split(":")[0]] = clusterOfTable[s.split(":")[0]] || {})[o.cluster] = 1; }
+  let placed = 0;
+  order.forEach(c => {
+    let pending = units[c].slice();
+    const need = pending.reduce((n, u) => n + u.length, 0);
+    while (pending.length) {
+      const cands = state.tables.map(t => ({ t, free: freeCount(t), has: !!(clusterOfTable[t.id] || {})[c] })).filter(x => x.free > 0);
+      if (!cands.length) return;
+      const remaining = pending.reduce((n, u) => n + u.length, 0);
+      // best: a table that already holds this cluster with room, else the smallest table that fits all remaining, else the emptiest
+      let pick = cands.filter(x => x.has).sort((a, b) => b.free - a.free)[0]
+              || cands.filter(x => x.free >= remaining).sort((a, b) => a.free - b.free)[0]
+              || cands.sort((a, b) => b.free - a.free)[0];
+      const t = pick.t;
+      const next = [];
+      pending.forEach(u => {
+        if (u.length === 2) {
+          let done = false;
+          for (let i = 0; i < t.seats && !done; i++) { const a = t.id + ":" + i, b = t.id + ":" + ((i + 1) % t.seats); if (!state.seats[a] && !state.seats[b]) { state.seats[a] = u[0]; state.seats[b] = u[1]; placed += 2; done = true; } }
+          if (!done) { const f = firstFree(t.id); if (f) { state.seats[f] = u[0]; placed++; next.push([u[1]]); } else next.push(u); }
+        } else { const f = firstFree(t.id); if (f) { state.seats[f] = u[0]; placed++; } else next.push(u); }
+      });
+      (clusterOfTable[t.id] = clusterOfTable[t.id] || {})[c] = 1;
+      if (next.length === pending.length) break;   // no progress on this table (full) — loop picks another
+      pending = next;
+    }
+  });
+  save(); render();
+  const left = occupantsToSeat().filter(o => !new Set(Object.values(state.seats)).has(o)).length;
+  toast(placed + " seated" + (left ? " · " + left + " still need a seat (add tables)" : " · everyone has a seat"));
+};
+
+/* ---- drag & drop (pointer events: mouse + touch) ---- */
+(function wireDnD() {
+  const root = document.body;
+  let ghost = null, startX = 0, startY = 0, moved = false, overEl = null;
+  function targetAt(x, y) {
+    const el = document.elementFromPoint(x, y); if (!el) return null;
+    const seat = el.closest(".seat"); if (seat) return { kind: "seat", el: seat, key: seat.dataset.seat };
+    const tbl = el.closest(".tbl"); if (tbl) return { kind: "table", el: tbl, key: tbl.dataset.table };
+    const pool = el.closest("#pool"); if (pool) return { kind: "pool", el: pool };
+    return null;
+  }
+  function setOver(t) { if (overEl) overEl.classList.remove("over"); overEl = t ? t.el : null; if (overEl) overEl.classList.add("over"); }
+  root.addEventListener("pointerdown", e => {
+    const c = e.target.closest(".chip"); if (!c || e.button) return;
+    if (e.target.closest("button, input, [contenteditable]")) return;
+    drag = { occ: c.dataset.occ, from: c.closest(".seat") ? c.closest(".seat").dataset.seat : null, id: e.pointerId }; startX = e.clientX; startY = e.clientY; moved = false;
+    e.preventDefault();
+  }, { passive: false });
+  root.addEventListener("pointermove", e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    if (!moved && Math.hypot(e.clientX - startX, e.clientY - startY) < 6) return;
+    if (!moved) { moved = true; ghost = document.createElement("div"); ghost.className = "ghost"; ghost.innerHTML = chip(drag.occ); document.body.appendChild(ghost); document.body.style.cursor = "grabbing"; }
+    ghost.style.left = (e.clientX - 62) + "px"; ghost.style.top = (e.clientY - 20) + "px";
+    setOver(targetAt(e.clientX, e.clientY));
+    e.preventDefault();
+  }, { passive: false });
+  function finish(e) {
+    if (!drag || (e && e.pointerId !== drag.id)) return;
+    const d = drag; drag = null;
+    if (ghost) { ghost.remove(); ghost = null; } document.body.style.cursor = "";
+    const t = e && moved ? targetAt(e.clientX, e.clientY) : null; setOver(null);
+    if (!moved) { tapOcc(d.occ); return; }     // a tap = pick/place mode
+    if (!t) return;
+    if (t.kind === "pool") unseat(d.occ);
+    else if (t.kind === "seat") place(d.occ, t.key);
+    else if (t.kind === "table") { const f = firstFree(t.key); if (f) place(d.occ, f); else { toast("That table is full"); return; } }
+    picked = null; save(); render();
+  }
+  root.addEventListener("pointerup", finish); root.addEventListener("pointercancel", () => finish(null));
+  // tap-to-place: tap a chip (pick), then tap a seat / table / pool
+  root.addEventListener("click", e => {
+    if (!picked) return;
+    if (e.target.closest(".chip")) return;   // handled by tapOcc
+    const seat = e.target.closest(".seat"), tbl = e.target.closest(".tbl"), pool = e.target.closest("#pool");
+    if (seat) place(picked, seat.dataset.seat); else if (tbl) { const f = firstFree(tbl.dataset.table); if (!f) { toast("That table is full"); return; } place(picked, f); } else if (pool) unseat(picked); else return;
+    picked = null; save(); render();
+  });
+})();
+function tapOcc(occ) {
+  if (picked && picked !== occ) { // tapping another chip while one is picked = swap / place
+    const s = seatOf(occ); if (s) { place(picked, s); picked = null; save(); render(); return; }
+  }
+  picked = picked === occ ? null : occ; renderSeating();
+  if (picked) toast("Now tap a seat, a table, or the Unseated box");
+}
+
+/* ============================================================
+   TABLES / EXTRAS / SETTINGS
+   ============================================================ */
+window.openTables = () => { $("tableRows").innerHTML = ""; state.tables.forEach(t => addTableRow(t)); if (!state.tables.length) { $("genN").value = 10; $("genS").value = 8; } $("tablesModal").classList.add("active"); };
+window.addTableRow = t => { const d = document.createElement("div"); d.className = "trow"; d.dataset.id = t ? t.id : "t" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); d.innerHTML = `<input class="tn" placeholder="Table name" value="${esc(t ? t.name : "Table " + ($("tableRows").children.length + 1))}"><input class="ts" type="number" min="1" max="30" value="${t ? t.seats : ($("genS").value || 8)}"><button class="x" onclick="this.parentNode.remove()">×</button>`; $("tableRows").appendChild(d); };
+window.generateTables = () => { const n = Math.max(1, Math.min(60, Number($("genN").value) || 10)), s = Math.max(1, Math.min(30, Number($("genS").value) || 8)); $("tableRows").innerHTML = ""; for (let i = 0; i < n; i++) addTableRow({ id: "t" + (i + 1), name: "Table " + (i + 1), seats: s }); };
+window.saveTables = () => { const rows = [...document.querySelectorAll("#tableRows .trow")].map(r => ({ id: r.dataset.id, name: r.querySelector(".tn").value.trim() || "Table", seats: Math.max(1, Math.min(30, Number(r.querySelector(".ts").value) || 8)) })); if (!rows.length) { toast("Add at least one table"); return; } state.tables = rows; closeModal("tablesModal"); save(); render(); };
+
+window.openExtra = id => {
+  const x = id ? state.extras[id] : null;
+  $("extraTitle").textContent = x ? "Edit guest" : "Add guest"; $("xId").value = x ? x.id : ""; $("xName").value = x ? x.name : ""; $("xRole").value = x ? (x.role || "") : "";
+  $("xGroup").innerHTML = Object.keys(GROUPS).map(g => `<option value="${g}">${GROUPS[g].label}</option>`).join(""); $("xGroup").value = x ? (x.group || "extra") : "extra";
+  const anchors = Object.values(roster).filter(g => g.group === "dm" || g.group === "exec").sort((a, b) => a.name.localeCompare(b.name));
+  $("xNear").innerHTML = `<option value="">— no preference —</option>` + anchors.map(g => `<option value="${g.cluster}">${esc(g.name)} (${g.group === "dm" ? "DM" : "Exec"})</option>`).join(""); $("xNear").value = x ? (x.near || "") : "";
+  $("xDel").style.display = x ? "" : "none"; $("xErr").textContent = ""; $("extraModal").classList.add("active"); setTimeout(() => $("xName").focus(), 60);
+};
+window.saveExtra = () => { const name = $("xName").value.trim(); if (!name) { $("xErr").textContent = "Name is required."; return; } const id = $("xId").value || "x_" + Date.now().toString(36); state.extras[id] = { id, name, group: $("xGroup").value, near: $("xNear").value, role: $("xRole").value.trim() }; closeModal("extraModal"); buildRoster(); save(); render(); };
+window.deleteExtra = () => { const id = $("xId").value; if (!id || !confirm("Remove this guest?")) return; delete state.extras[id]; delete state.guests[id]; unseat("g:" + id); unseat("p:" + id); closeModal("extraModal"); buildRoster(); save(); render(); };
+
+window.openSettings = () => { const s = state.settings; $("sName").value = s.name || ""; $("sWhen").value = s.when || ""; $("sCode").value = s.code || DEFAULT_CODE; const i = s.incl || {}; $("sInclExec").checked = i.exec !== false; $("sInclDM").checked = i.dm !== false; $("sInclGM").checked = i.gm !== false; $("sInclSupport").checked = i.support !== false; $("sInclTech").checked = i.tech !== false; $("setModal").classList.add("active"); };
+window.saveSettings = () => { state.settings = Object.assign({}, state.settings, { name: $("sName").value.trim(), when: $("sWhen").value.trim(), code: $("sCode").value.trim() || DEFAULT_CODE, incl: { exec: $("sInclExec").checked, dm: $("sInclDM").checked, gm: $("sInclGM").checked, support: $("sInclSupport").checked, tech: $("sInclTech").checked } }); closeModal("setModal"); buildRoster(); save(); render(); };
+window.closeModal = id => $(id).classList.remove("active");
+window.showTab = t => { $("viewGuests").classList.toggle("on", t === "guests"); $("viewSeating").classList.toggle("on", t === "seating"); $("tabGuests").classList.toggle("on", t === "guests"); $("tabSeating").classList.toggle("on", t === "seating"); };
+
+/* ---- print ---- */
+window.printChart = () => {
+  const s = state.settings;
+  let h = `<h1>${esc(s.name || "Seating Chart")}</h1><div class="pm">${esc(s.when || "")}${s.when ? " · " : ""}${Object.keys(state.seats).length} seated · ${state.tables.length} tables · printed ${new Date().toLocaleDateString()}</div><div class="ptables">`;
+  state.tables.forEach(t => { h += `<div class="ptbl"><h3>${esc(t.name)} <span style="font-weight:400;font-size:9pt;color:#666">(${t.seats})</span></h3><ol>`; for (let i = 0; i < t.seats; i++) { const o = state.seats[t.id + ":" + i] && occInfo(state.seats[t.id + ":" + i]); h += `<li>${o ? esc(o.name) + (o.plus ? "" : ` <span class="em">— ${esc(o.sub)}</span>`) : '<span class="em">open</span>'}</li>`; } h += `</ol></div>`; });
+  h += `</div>`;
+  const rows = Object.keys(state.seats).map(k => { const o = occInfo(state.seats[k]); const t = state.tables.find(x => x.id === k.split(":")[0]); return o && t ? { name: o.name, table: t.name } : null; }).filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
+  h += `<div class="plist"><div class="ph"><span>Guest</span><span>Table</span></div>${rows.map(r => `<div><span>${esc(r.name)}</span><span>${esc(r.table)}</span></div>`).join("")}</div>`;
+  h += `<div class="cards">${rows.map(r => `<div class="card"><div class="n">${esc(r.name)}</div><div class="t">${esc(r.table)}</div></div>`).join("")}</div>`;
+  $("printArea").innerHTML = h; window.print();
+};
+
+/* ---- access ---- */
+window.submitGate = () => { if ($("gateInput").value.trim() !== (state.settings.code || DEFAULT_CODE)) { $("gateErr").textContent = "Incorrect access code."; $("gateInput").value = ""; return; } try { sessionStorage.setItem("partymiOk", "1"); } catch (e) {} $("gate").classList.add("hidden"); };
+window.signOut = () => { try { sessionStorage.removeItem("partymiOk"); } catch (e) {} $("gateInput").value = ""; $("gate").classList.remove("hidden"); };
+(function init() {
+  let ok = false; try { ok = sessionStorage.getItem("partymiOk") === "1"; } catch (e) {}
+  if (ok) $("gate").classList.add("hidden"); else setTimeout(() => $("gateInput").focus(), 100);
+  try { const z = parseFloat(localStorage.getItem("partymiZoom")); if (z) { zoomLevel = z - 0.1; zoom(0.1); } else if (innerWidth < 640) { zoomLevel = 0.7; zoom(0); } } catch (e) {}
+  if (window.FS) startFirestore(); else window.addEventListener("firebase-ready", startFirestore, { once: true });
+  loadFindMi();
+  document.addEventListener("keydown", e => { if (e.key === "Escape") { picked = null; renderSeating(); document.querySelectorAll(".backdrop.active").forEach(b => b.classList.remove("active")); } });
+})();
+</script>
+</body>
+</html>
