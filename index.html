@@ -96,6 +96,10 @@
   .tables { display: flex; flex-wrap: wrap; gap: 26px 22px; justify-content: center; align-items: flex-start; }
   .tbl { position: relative; flex-shrink: 0; }
   .tbl .disc { position: absolute; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #fff, var(--tint-2)); border: 2px solid var(--navy); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 8px; transition: box-shadow .12s; }
+  .tbl .disc.square, .tbl .disc.rect { border-radius: 14px; background: linear-gradient(160deg, #fff, var(--tint-2)); }
+  .tbl .disc.chairs { border-radius: 8px; background: var(--surface-2); border: 1px dashed var(--line-2); flex-direction: row; gap: 8px; padding: 2px 8px; justify-content: flex-start; }
+  .tbl .disc.chairs .tn { font-size: .72rem; } .tbl .disc.chairs .tc { margin-top: 0; } .tbl .disc.chairs .tools { margin-top: 0; margin-left: auto; }
+  .tbl.chairs .seat { border-radius: 10px 10px 4px 4px; }
   .tbl .disc .tn { font-family: var(--font-display); font-weight: 700; font-size: .85rem; color: var(--navy); line-height: 1.1; cursor: text; }
   .tbl .disc .tc { font-size: .66rem; color: var(--muted); margin-top: 3px; }
   .tbl .disc .tools { display: flex; gap: 4px; margin-top: 5px; }
@@ -187,7 +191,7 @@
   .modal .mf { padding: 10px 14px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 8px; background: var(--surface-2); }
   .fg { margin-bottom: 10px; } .fg label { display: block; font-size: .72rem; font-weight: 700; color: var(--muted); margin-bottom: 3px; } .fg input, .fg select { width: 100%; }
   .err { color: var(--bad); font-size: .76rem; margin-top: 6px; min-height: 1em; }
-  .trow { display: grid; grid-template-columns: 1fr 90px 36px; gap: 6px; margin-bottom: 6px; align-items: center; }
+  .trow { display: grid; grid-template-columns: 1fr 70px 120px 36px; gap: 6px; margin-bottom: 6px; align-items: center; }
   .sect { font-size: .66rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 14px 0 6px; }
 
   .gate { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, var(--navy), #0f172a); padding: 20px; }
@@ -330,7 +334,7 @@
     <div class="group" id="checkList"></div>
   </section>
 </main>
-<footer>DPM PartyMi · v2.0 · Guests come live from DPM FindMi (read-only) · RSVPs, +1s, tables and seating are saved in Firestore (partymi)</footer>
+<footer>DPM PartyMi · v2.1 · Guests come live from DPM FindMi (read-only) · RSVPs, +1s, tables and seating are saved in Firestore (partymi)</footer>
 
 <!-- Extra guest modal -->
 <div class="backdrop" id="extraModal"><div class="modal">
@@ -354,12 +358,14 @@
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.8rem;">
       <label><input id="genN" type="number" min="1" max="60" value="10" style="width:64px;padding:4px 6px;"> tables ×</label>
       <label><input id="genS" type="number" min="2" max="20" value="8" style="width:64px;padding:4px 6px;"> seats</label>
+      <select id="genShape" style="padding:4px 6px;"><option value="round">Round</option><option value="square">Square</option><option value="rect">Rectangle</option></select>
       <button class="btn xs" onclick="generateTables()">Generate</button>
     </div>
     <p style="font-size:.7rem;color:var(--muted);margin-top:4px;">Generate replaces the table list (existing seating is kept where table numbers still exist).</p>
     <div class="sect">Customize</div>
+    <p style="font-size:.7rem;color:var(--muted);margin:-2px 0 6px;">Name · seats · shape. <b>Loose chairs</b> is a group of standalone seats (lounge, bar stools, kids' corner) with no table — auto-seat only uses them once the real tables are full.</p>
     <div id="tableRows"></div>
-    <button class="btn xs" onclick="addTableRow()">+ Add table</button>
+    <button class="btn xs" onclick="addTableRow()">+ Add table</button> <button class="btn xs" onclick="addTableRow({ id: 'c' + Date.now().toString(36), name: 'Loose chairs', seats: 4, shape: 'chairs' })">+ Loose chairs</button>
   </div>
   <div class="mf"><button class="btn" onclick="closeModal('tablesModal')">Cancel</button><button class="btn primary" onclick="saveTables()">Save tables</button></div>
 </div></div>
@@ -636,22 +642,20 @@ function renderSeating() {
   $("poolList").innerHTML = ph || `<div style="padding:10px;font-size:.78rem;color:var(--muted);width:100%;text-align:center;">Everyone is seated 🎉</div>`;
   let th = "";
   state.tables.forEach(t => {
-    const R = Math.max(88, Math.round(t.seats * 96 / (2 * Math.PI)) + 8);
-    const D = R * 2 + 100, cx = D / 2, cy = D / 2, inner = (R - 50) * 2;
+    const g = geom(t), D = g.W;
     const used = Array.from({ length: t.seats }).filter((_, i) => state.seats[t.id + ":" + i]).length;
     const lp = state.layout.on ? (state.layout.pos[t.id] || autoPos(t)) : null;
-    th += `<div class="tbl" data-table="${t.id}" style="width:${D}px;height:${D}px;${lp ? `left:${lp.x}px;top:${lp.y}px;` : ""}">
-      <div class="disc" style="width:${inner}px;height:${inner}px;left:${cx - inner / 2}px;top:${cy - inner / 2}px;"><div class="tn" contenteditable="true" spellcheck="false" onblur="renameTable('${t.id}', this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${esc(t.name)}</div><div class="tc">${used}/${t.seats}</div><div class="tools"><button class="btn xs" title="Empty this table" onclick="emptyTable('${t.id}')">empty</button></div></div>`;
+    th += `<div class="tbl ${g.shape}" data-table="${t.id}" style="width:${g.W}px;height:${g.H}px;${lp ? `left:${lp.x}px;top:${lp.y}px;` : ""}">
+      <div class="disc ${g.shape}" style="width:${g.disc.w}px;height:${g.disc.h}px;left:${g.disc.left}px;top:${g.disc.top}px;"><div class="tn" contenteditable="true" spellcheck="false" onblur="renameTable('${t.id}', this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${esc(t.name)}</div><div class="tc">${used}/${t.seats}</div><div class="tools"><button class="btn xs" title="Empty this table" onclick="emptyTable('${t.id}')">empty</button></div></div>`;
     for (let i = 0; i < t.seats; i++) {
-      const a = -Math.PI / 2 + i * 2 * Math.PI / t.seats;
-      const x = cx + R * Math.cos(a), y = cy + R * Math.sin(a);
+      const { x, y } = g.seats[i];
       const occ = state.seats[t.id + ":" + i];
       th += `<div class="seat" data-seat="${t.id}:${i}" style="left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;">${occ ? chip(occ) : (i + 1)}</div>`;
     }
     th += `</div>`;
   });
   if (state.layout.on) {
-    const W = Math.max(1200, ...state.tables.map(t => (state.layout.pos[t.id] || {}).x + 420 || 0), ...state.layout.fixtures.map(f => f.x + f.w + 40)), H = Math.max(600, ...state.tables.map(t => (state.layout.pos[t.id] || {}).y + 420 || 0), ...state.layout.fixtures.map(f => f.y + f.h + 40));
+    const W = Math.max(1200, ...state.tables.map(t => ((state.layout.pos[t.id] || autoPos(t)).x + geom(t).W + 40)), ...state.layout.fixtures.map(f => f.x + f.w + 40)), H = Math.max(600, ...state.tables.map(t => ((state.layout.pos[t.id] || autoPos(t)).y + geom(t).H + 40)), ...state.layout.fixtures.map(f => f.y + f.h + 40));
     th = state.layout.fixtures.map(f => `<div class="fix ${f.shape === "round" ? "round" : ""}" data-fix="${f.id}" style="left:${f.x}px;top:${f.y}px;width:${f.w}px;height:${f.h}px;">${esc(f.label)}</div>`).join("") + th;
     $("tables").classList.add("canvas"); $("tables").style.width = W + "px"; $("tables").style.height = H + "px";
   } else { $("tables").classList.remove("canvas"); $("tables").style.width = ""; $("tables").style.height = ""; }
@@ -659,7 +663,31 @@ function renderSeating() {
   $("legend").innerHTML = Object.keys(GROUPS).map(g => `<span><i style="background:${GROUPS[g].color}"></i>${GROUPS[g].label}</span>`).join("") + `<span><i style="background:#fff;border:1.5px dashed #94a3b8"></i>+1</span><span><i style="background:#fff;border:1.5px solid #fcd34d"></i>no reply yet</span>`;
 }
 /* ---- room layout ---- */
-function tableD(t) { const R = Math.max(88, Math.round(t.seats * 96 / (2 * Math.PI)) + 8); return R * 2 + 100; }
+/* Table geometry for every shape. Returns { W, H, disc:{left,top,w,h,cls}, seats:[{x,y}] } in px, seat = chip centre. */
+const SHAPES = { round: "Round", square: "Square", rect: "Rectangle", chairs: "Loose chairs" };
+function geom(t) {
+  const n = Math.max(1, t.seats), shape = SHAPES[t.shape] ? t.shape : "round";
+  if (shape === "round") {
+    const R = Math.max(88, Math.round(n * 96 / (2 * Math.PI)) + 8), D = R * 2 + 100, inner = (R - 50) * 2;
+    return { W: D, H: D, shape, disc: { left: D / 2 - inner / 2, top: D / 2 - inner / 2, w: inner, h: inner }, seats: Array.from({ length: n }, (_, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / n; return { x: D / 2 + R * Math.cos(a), y: D / 2 + R * Math.sin(a) }; }) };
+  }
+  if (shape === "chairs") {
+    const cols = Math.min(n, 6), rows = Math.ceil(n / cols), W = cols * 100 + 12, H = 34 + rows * 54 + 8;
+    return { W, H, shape, disc: { left: 0, top: 0, w: W, h: 30 }, seats: Array.from({ length: n }, (_, i) => ({ x: 6 + 50 + (i % cols) * 100, y: 34 + 26 + Math.floor(i / cols) * 54 })) };
+  }
+  // square / rect: chairs walk the perimeter at even spacing, pushed outward from the edge
+  let w, h; const P0 = Math.max(n * 104, 420);
+  if (shape === "square") { w = h = Math.max(130, Math.round(P0 / 4)); } else { h = Math.max(110, Math.round(P0 / 6)); w = h * 2; }
+  const pad = 84, off = 36, P = 2 * (w + h), seats = [];
+  for (let i = 0; i < n; i++) {
+    let d = (i * P / n + w / 2) % P;   // first chair top-centre, the rest evenly around
+    let x, y;
+    if (d < w) { x = d; y = -off; } else if (d < w + h) { x = w + off; y = d - w; } else if (d < 2 * w + h) { x = w - (d - w - h); y = h + off; } else { x = -off; y = h - (d - 2 * w - h); }
+    seats.push({ x: pad + x, y: pad + y });
+  }
+  return { W: w + pad * 2, H: h + pad * 2, shape, disc: { left: pad, top: pad, w, h }, seats };
+}
+function tableD(t) { const g = geom(t); return Math.max(g.W, g.H); }
 function autoPos(t) { const i = state.tables.indexOf(t), cols = 4; const step = Math.max(...state.tables.map(tableD)) + 20; return { x: 40 + (i % cols) * step, y: 40 + Math.floor(i / cols) * step }; }
 window.autoArrange = () => { state.layout.pos = {}; state.tables.forEach(t => state.layout.pos[t.id] = autoPos(t)); save("Auto-arranged room"); render(); };
 window.toggleLayout = () => { state.layout.on = !state.layout.on; if (state.layout.on) state.tables.forEach(t => { if (!state.layout.pos[t.id]) state.layout.pos[t.id] = autoPos(t); }); save(state.layout.on ? "Room layout on" : "Room layout off", { silent: true }); render(); };
@@ -716,7 +744,7 @@ function freeCount(t) { let n = 0; for (let i = 0; i < t.seats; i++) if (!state.
 function lockOf(key) { const id = gInfo(key).lock; return id && state.tables.find(t => t.id === id) ? id : ""; }
 function placeUnit(t, u) {   // place a 1- or 2-person unit on table t, keeping pairs adjacent; returns leftover occupants
   if (u.length === 2) {
-    for (let i = 0; i < t.seats; i++) { const a = t.id + ":" + i, b = t.id + ":" + ((i + 1) % t.seats); if (!state.seats[a] && !state.seats[b]) { state.seats[a] = u[0]; state.seats[b] = u[1]; return []; } }
+    for (let i = 0; i < t.seats; i++) { if (i === t.seats - 1 && t.shape === "chairs") break; const a = t.id + ":" + i, b = t.id + ":" + ((i + 1) % t.seats); if (!state.seats[a] && !state.seats[b]) { state.seats[a] = u[0]; state.seats[b] = u[1]; return []; } }
     const f = firstFree(t.id); if (f) { state.seats[f] = u[0]; return [u[1]]; } return u;
   }
   const f = firstFree(t.id); if (f) { state.seats[f] = u[0]; return []; } return u;
@@ -752,7 +780,8 @@ window.autoSeat = () => {
     let pending = units[c].slice();
     const need = pending.reduce((n, u) => n + u.length, 0);
     while (pending.length) {
-      const cands = state.tables.map(t => ({ t, free: freeCount(t), has: !!(clusterOfTable[t.id] || {})[c] })).filter(x => x.free > 0);
+      let cands = state.tables.map(t => ({ t, free: freeCount(t), has: !!(clusterOfTable[t.id] || {})[c] })).filter(x => x.free > 0);
+      if (cands.some(x => x.t.shape !== "chairs")) cands = cands.filter(x => x.t.shape !== "chairs");
       if (!cands.length) return;
       const remaining = pending.reduce((n, u) => n + u.length, 0);
       // best: a table that already holds this cluster with room, else the smallest table that fits all remaining, else the emptiest
@@ -839,9 +868,9 @@ function tapOcc(occ) {
    TABLES / EXTRAS / SETTINGS
    ============================================================ */
 window.openTables = () => { $("tableRows").innerHTML = ""; state.tables.forEach(t => addTableRow(t)); if (!state.tables.length) { $("genN").value = 10; $("genS").value = 8; } $("tablesModal").classList.add("active"); };
-window.addTableRow = t => { const d = document.createElement("div"); d.className = "trow"; d.dataset.id = t ? t.id : "t" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); d.innerHTML = `<input class="tn" placeholder="Table name" value="${esc(t ? t.name : "Table " + ($("tableRows").children.length + 1))}"><input class="ts" type="number" min="1" max="30" value="${t ? t.seats : ($("genS").value || 8)}"><button class="x" onclick="this.parentNode.remove()">×</button>`; $("tableRows").appendChild(d); };
-window.generateTables = () => { const n = Math.max(1, Math.min(60, Number($("genN").value) || 10)), s = Math.max(1, Math.min(30, Number($("genS").value) || 8)); $("tableRows").innerHTML = ""; for (let i = 0; i < n; i++) addTableRow({ id: "t" + (i + 1), name: "Table " + (i + 1), seats: s }); };
-window.saveTables = () => { const rows = [...document.querySelectorAll("#tableRows .trow")].map(r => ({ id: r.dataset.id, name: r.querySelector(".tn").value.trim() || "Table", seats: Math.max(1, Math.min(30, Number(r.querySelector(".ts").value) || 8)) })); if (!rows.length) { toast("Add at least one table"); return; } state.tables = rows; closeModal("tablesModal"); save("Tables: " + rows.length + " tables, " + rows.reduce((a, t) => a + t.seats, 0) + " seats"); render(); };
+window.addTableRow = t => { const d = document.createElement("div"); d.className = "trow"; d.dataset.id = t ? t.id : "t" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); d.innerHTML = `<input class="tn" placeholder="Table name" value="${esc(t ? t.name : "Table " + ($("tableRows").children.length + 1))}"><input class="ts" type="number" min="1" max="40" value="${t ? t.seats : ($("genS").value || 8)}"><select class="tsh">${Object.keys(SHAPES).map(k => `<option value="${k}" ${(t ? (t.shape || "round") : $("genShape").value) === k ? "selected" : ""}>${SHAPES[k]}</option>`).join("")}</select><button class="x" onclick="this.parentNode.remove()">×</button>`; $("tableRows").appendChild(d); };
+window.generateTables = () => { const n = Math.max(1, Math.min(60, Number($("genN").value) || 10)), s = Math.max(1, Math.min(30, Number($("genS").value) || 8)); $("tableRows").innerHTML = ""; for (let i = 0; i < n; i++) addTableRow({ id: "t" + (i + 1), name: "Table " + (i + 1), seats: s, shape: $("genShape").value }); };
+window.saveTables = () => { const rows = [...document.querySelectorAll("#tableRows .trow")].map(r => ({ id: r.dataset.id, name: r.querySelector(".tn").value.trim() || "Table", seats: Math.max(1, Math.min(40, Number(r.querySelector(".ts").value) || 8)), shape: r.querySelector(".tsh").value })); if (!rows.length) { toast("Add at least one table"); return; } state.tables = rows; closeModal("tablesModal"); save("Tables: " + rows.length + " tables, " + rows.reduce((a, t) => a + t.seats, 0) + " seats"); render(); };
 
 window.openExtra = id => {
   const x = id ? state.extras[id] : null;
@@ -984,10 +1013,14 @@ window.printChart = () => {
   h += `</div>`;
   if (state.layout.on && state.tables.length) {   // floor plan
     const pos = t => state.layout.pos[t.id] || autoPos(t);
-    const W = Math.max(...state.tables.map(t => pos(t).x + 300), ...state.layout.fixtures.map(f => f.x + f.w), 800), H = Math.max(...state.tables.map(t => pos(t).y + 300), ...state.layout.fixtures.map(f => f.y + f.h), 500);
+    const W = Math.max(...state.tables.map(t => pos(t).x + geom(t).W), ...state.layout.fixtures.map(f => f.x + f.w), 800), H = Math.max(...state.tables.map(t => pos(t).y + geom(t).H), ...state.layout.fixtures.map(f => f.y + f.h), 500);
     let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-height:7.5in;margin:10pt 0;page-break-before:always;" xmlns="http://www.w3.org/2000/svg">`;
     state.layout.fixtures.forEach(f => { svg += f.shape === "round" ? `<ellipse cx="${f.x + f.w / 2}" cy="${f.y + f.h / 2}" rx="${f.w / 2}" ry="${f.h / 2}" fill="#fff7ed" stroke="#9a3412" stroke-width="3"/>` : `<rect x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}" rx="12" fill="#fff7ed" stroke="#9a3412" stroke-width="3"/>`; svg += `<text x="${f.x + f.w / 2}" y="${f.y + f.h / 2 + 8}" text-anchor="middle" font-size="22" font-weight="700" fill="#9a3412">${esc(f.label)}</text>`; });
-    state.tables.forEach(t => { const R = Math.max(88, Math.round(t.seats * 96 / (2 * Math.PI)) + 8); const D = R * 2 + 100; const c = { x: pos(t).x + D / 2, y: pos(t).y + D / 2 }; svg += `<circle cx="${c.x}" cy="${c.y}" r="${R - 20}" fill="#eef0fb" stroke="#251d7f" stroke-width="3"/><text x="${c.x}" y="${c.y + 2}" text-anchor="middle" font-size="26" font-weight="700" fill="#251d7f">${esc(t.name)}</text><text x="${c.x}" y="${c.y + 28}" text-anchor="middle" font-size="18" fill="#555">${t.seats} seats</text>`; for (let i = 0; i < t.seats; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / t.seats; svg += `<circle cx="${c.x + R * Math.cos(a)}" cy="${c.y + R * Math.sin(a)}" r="9" fill="${state.seats[t.id + ":" + i] ? "#251d7f" : "#fff"}" stroke="#251d7f" stroke-width="2"/>`; } });
+    state.tables.forEach(t => { const g = geom(t), o = pos(t), d = g.disc; const cx = o.x + d.left + d.w / 2, cy = o.y + d.top + d.h / 2;
+      svg += g.shape === "round" ? `<circle cx="${cx}" cy="${cy}" r="${d.w / 2}" fill="#eef0fb" stroke="#251d7f" stroke-width="3"/>` : g.shape === "chairs" ? `<rect x="${o.x}" y="${o.y}" width="${g.W}" height="${g.H}" rx="10" fill="none" stroke="#999" stroke-width="2" stroke-dasharray="8 6"/>` : `<rect x="${o.x + d.left}" y="${o.y + d.top}" width="${d.w}" height="${d.h}" rx="14" fill="#eef0fb" stroke="#251d7f" stroke-width="3"/>`;
+      const ty = g.shape === "chairs" ? o.y + 22 : cy + 2;
+      svg += `<text x="${cx}" y="${ty}" text-anchor="middle" font-size="${g.shape === "chairs" ? 18 : 26}" font-weight="700" fill="#251d7f">${esc(t.name)}</text>` + (g.shape === "chairs" ? "" : `<text x="${cx}" y="${cy + 28}" text-anchor="middle" font-size="18" fill="#555">${t.seats} seats</text>`);
+      g.seats.forEach((sp, i) => { svg += `<circle cx="${o.x + sp.x}" cy="${o.y + sp.y}" r="9" fill="${state.seats[t.id + ":" + i] ? "#251d7f" : "#fff"}" stroke="#251d7f" stroke-width="2"/>`; }); });
     h += svg + `</svg>`;
   }
   const rows = Object.keys(state.seats).map(k => { const o = occInfo(state.seats[k]); const t = state.tables.find(x => x.id === k.split(":")[0]); return o && t ? { name: o.name, table: t.name } : null; }).filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
