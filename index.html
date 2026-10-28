@@ -123,6 +123,16 @@
   .lock-row .sub { font-size: .7rem; color: var(--muted); } .lock-row input { padding: 4px 6px; text-align: center; }
   #toTop { position: fixed; right: 16px; bottom: 18px; z-index: 300; width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--navy); color: #fff; font-size: 1.2rem; box-shadow: var(--shadow-md); display: none; align-items: center; justify-content: center; }
   #toTop.show { display: flex; }
+  /* ---- sync ---- */
+  .sync-sect { margin-top: 12px; } .sync-sect h4 { font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; display: flex; gap: 8px; align-items: center; }
+  .sync-sect h4 .n { background: var(--tint-2); color: var(--navy); border-radius: 999px; padding: 1px 8px; font-size: .66rem; }
+  .sy { display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; padding: 6px 8px; border-bottom: 1px solid var(--line); font-size: .8rem; }
+  .sy.info { grid-template-columns: 1fr; } .sy input { width: 16px; height: 16px; margin-top: 2px; accent-color: var(--navy); }
+  .sy .t { font-weight: 700; } .sy .d { font-size: .72rem; color: var(--muted); }
+  .tag { font-size: .62rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: 1px 6px; border-radius: 999px; margin-right: 6px; }
+  .tag.new { background: var(--ok-bg); color: var(--ok); } .tag.gone { background: var(--bad-bg); color: var(--bad); } .tag.chg { background: var(--warn-bg); color: var(--warn); } .tag.role { background: #ede9fe; color: #5b21b6; }
+  .sync-ok { background: var(--ok-bg); color: var(--ok); border-radius: 8px; padding: 10px 14px; font-weight: 700; text-align: center; }
+  .pill.invite { background: var(--warn-bg); color: var(--warn); cursor: pointer; }
   /* ---- room layout ---- */
   .tables.canvas { display: block; position: relative; min-height: 600px; background: linear-gradient(#f1f3f9 1px, transparent 1px), linear-gradient(90deg, #f1f3f9 1px, transparent 1px); background-size: 40px 40px; border: 1px dashed var(--line-2); border-radius: 10px; justify-content: flex-start; }
   .tables.canvas .tbl { position: absolute; }
@@ -259,6 +269,7 @@
   <div class="hdr-actions">
     <span class="conn" id="conn"><i></i><span>Connecting…</span></span>
     <button class="hbtn" id="undoBtn" onclick="undo()" title="Undo last change" disabled>↶ Undo</button>
+    <button class="hbtn" onclick="syncFindMi()" title="Re-read FindMi and show who changed">🔄 Sync FindMi</button>
     <button class="hbtn" onclick="openLog()">📜 Log</button>
     <button class="hbtn" onclick="openSettings()">⚙ Party</button>
     <button class="hbtn" onclick="printChart()">🖨 Print</button>
@@ -274,7 +285,7 @@
   <section class="view on" id="viewGuests">
     <div class="toolbar">
       <input type="search" id="q" placeholder="Search guests, stores, departments…" oninput="renderGuests()">
-      <div class="seg" id="filtSeg"><button class="on" data-f="all" onclick="setFilter('all')">All</button><button data-f="yes" onclick="setFilter('yes')">Yes</button><button data-f="invited" onclick="setFilter('invited')">No reply</button><button data-f="no" onclick="setFilter('no')">No</button><button data-f="hidden" onclick="setFilter('hidden')">Hidden</button></div>
+      <div class="seg" id="filtSeg"><button class="on" data-f="all" onclick="setFilter('all')">All</button><button data-f="yes" onclick="setFilter('yes')">Yes</button><button data-f="invited" onclick="setFilter('invited')">No reply</button><button data-f="no" onclick="setFilter('no')">No</button><button data-f="invite" onclick="setFilter('invite')">Needs invite</button><button data-f="hidden" onclick="setFilter('hidden')">Hidden</button></div>
       <span style="flex:1"></span>
       <button class="btn" onclick="bulkPlusOne(true)">+1 for everyone</button>
       <button class="btn" onclick="bulkPlusOne(false)">Clear all +1s</button>
@@ -334,7 +345,7 @@
     <div class="group" id="checkList"></div>
   </section>
 </main>
-<footer>DPM PartyMi · v2.1 · Guests come live from DPM FindMi (read-only) · RSVPs, +1s, tables and seating are saved in Firestore (partymi)</footer>
+<footer>DPM PartyMi · v2.2 · Guests come live from DPM FindMi (read-only) · RSVPs, +1s, tables and seating are saved in Firestore (partymi)</footer>
 
 <!-- Extra guest modal -->
 <div class="backdrop" id="extraModal"><div class="modal">
@@ -401,6 +412,13 @@
     </div>
   </div>
   <div class="mf"><button class="btn danger" onclick="deleteFixture()" style="margin-right:auto;">Delete</button><button class="btn" onclick="closeModal('fixModal')">Cancel</button><button class="btn primary" onclick="saveFixture()">Save</button></div>
+</div></div>
+
+<!-- Sync modal -->
+<div class="backdrop" id="syncModal"><div class="modal" style="max-width:760px;">
+  <div class="mh"><h3>Sync from FindMi</h3><button class="x" onclick="closeModal('syncModal')">×</button></div>
+  <div class="mb" id="syncBody"></div>
+  <div class="mf"><span id="syncMeta" style="margin-right:auto;font-size:.72rem;color:var(--muted);align-self:center;"></span><button class="btn" onclick="closeModal('syncModal')">Close</button><button class="btn primary" id="syncApply" onclick="applySync()">Save</button></div>
 </div></div>
 
 <!-- Log modal -->
@@ -484,7 +502,17 @@ function personName(raw) {
   if (s.includes(",")) { const [last, ...rest] = s.split(","); return (rest.join(",").trim().split(/\s+/).map(fix).join(" ") + " " + last.trim().split(/\s+/).map(fix).join(" ")).trim(); }
   return s.split(/\s+/).map(w => /^[A-Z]{2,}$/.test(w) || /^[a-z]+$/.test(w) ? fix(w) : w).join(" ");
 }
+function fmtPhone(raw) { let d = String(raw || "").replace(/\D/g, ""); if (d.length === 11 && d[0] === "1") d = d.slice(1); return d.length === 10 ? d.slice(0, 3) + "-" + d.slice(3, 6) + "-" + d.slice(6) : String(raw || "").trim(); }
 function firstName(n) { return String(n || "").trim().split(/\s+/)[0] || ""; }
+function normName(n) { return String(n || "").toLowerCase().replace(/[^a-z ]+/g, " ").replace(/\s+/g, " ").trim(); }
+function samePerson(a, b) {
+  const A = normName(personName(a)).split(" ").filter(Boolean), B = normName(personName(b)).split(" ").filter(Boolean);
+  if (!A.length || !B.length) return false; if (A.join(" ") === B.join(" ")) return true;
+  const [sh, lg] = A.length <= B.length ? [A, B] : [B, A];
+  if (sh[sh.length - 1] !== lg[lg.length - 1]) return false;
+  return sh.every(t => t.length === 1 ? lg.some(u => u[0] === t) : lg.includes(t));
+}
+function gmKey(name) { return "gm_" + normName(personName(name)).replace(/ /g, "_"); }
 function shortName(n) { const p = String(n || "").trim().split(/\s+/); return p.length > 1 ? p[0] + " " + p[p.length - 1][0] + "." : p[0] || ""; }
 function digits(v) { return String(v || "").replace(/\D/g, "").replace(/^0+/, ""); }
 function divisionOf(r) {
@@ -520,9 +548,30 @@ function buildRoster() {
     if (!gm) return;
     const dm = coachIds(r).find(id => coaches[id]);
     const div = divisionOf(r);
-    roster["gm_" + r.id] = { key: "gm_" + r.id, name: personName(gm.name), group: "gm", sub: "GM · " + storeShort(r) + " · " + (DIV_LABEL[div] || div), cluster: dm ? "dm_" + dm : (dirs[r.assignedDirectorId] ? "do_" + r.assignedDirectorId : "gm_other"), phone: gm.phone, division: div };
+    const key = gmKey(gm.name);
+    if (roster[key]) { roster[key].sub += " + " + storeShort(r); roster[key].stores.push(r.id); return; }
+    roster[key] = { key, name: personName(gm.name), group: "gm", sub: "GM · " + storeShort(r) + " · " + (DIV_LABEL[div] || div), cluster: dm ? "dm_" + dm : (dirs[r.assignedDirectorId] ? "do_" + r.assignedDirectorId : "gm_other"), phone: gm.phone, division: div, stores: [r.id] };
   });
+  migrateLegacyGmKeys(rests);
   Object.values(state.extras || {}).forEach(x => roster[x.id] = { key: x.id, name: x.name, group: x.group || "extra", sub: x.role || GROUPS[x.group || "extra"].label, cluster: x.near || (x.group === "extra" ? "extra" : x.group === "exec" ? "exec" : x.group === "tech" ? "tech" : x.group === "support" ? "support_other" : "extra"), extra: true });
+}
+/* Move every trace of a guest key (RSVP/+1/lock, seats, check-in) to a new key. */
+function migrateKey(oldK, newK) {
+  if (oldK === newK) return false; let moved = false;
+  if (state.guests[oldK]) { state.guests[newK] = Object.assign({}, state.guests[oldK], state.guests[newK] || {}); delete state.guests[oldK]; moved = true; }
+  for (const sk in state.seats) { const v = state.seats[sk]; if (v === "g:" + oldK) { state.seats[sk] = "g:" + newK; moved = true; } else if (v === "p:" + oldK) { state.seats[sk] = "p:" + newK; moved = true; } }
+  ["g:", "p:"].forEach(pf => { if (state.checkin[pf + oldK]) { state.checkin[pf + newK] = state.checkin[pf + oldK]; delete state.checkin[pf + oldK]; moved = true; } });
+  return moved;
+}
+// Older versions keyed GMs by store (gm_<storeId>); re-key them by person once so a GM who moves keeps their RSVP and seat.
+let legacyMigrated = false;
+function migrateLegacyGmKeys(rests) {
+  if (legacyMigrated || !findmi || !Object.keys(rests).length) return;
+  if (!Object.keys(state.guests || {}).length && !Object.keys(state.seats || {}).length) return;
+  let n = 0;
+  Object.values(rests).forEach(r => { const gm = managersOf(r).find(m => /^gm$/i.test(m.title || "") && (m.name || "").trim()); if (!gm) return; if (migrateKey("gm_" + r.id, gmKey(gm.name))) n++; });
+  legacyMigrated = true;
+  if (n) { save("Re-keyed " + n + " GM guest" + (n === 1 ? "" : "s") + " by person", { silent: true, noUndo: true }); }
 }
 function gInfo(key) { return (state.guests || {})[key] || {}; }
 function rsvp(key) { return gInfo(key).rsvp || "invited"; }
@@ -536,6 +585,7 @@ function occupantsToSeat() { const out = []; Object.keys(roster).forEach(k => { 
 function seatOf(occ) { for (const s in state.seats) if (state.seats[s] === occ) return s; return null; }
 function tableOfOcc(occ) { const s = seatOf(occ); return s ? state.tables.find(t => t.id === s.split(":")[0]) : null; }
 function pruneSeats() {   // drop occupants who no longer attend / tables that no longer exist
+  if (!findmi) return;     // roster isn't built yet — never prune against an empty list
   const valid = new Set(occupantsToSeat()); const tids = new Set(state.tables.map(t => t.id));
   for (const s in state.seats) { const [tid, i] = s.split(":"); const t = state.tables.find(x => x.id === tid); if (!tids.has(tid) || !valid.has(state.seats[s]) || Number(i) >= t.seats) delete state.seats[s]; }
 }
@@ -565,6 +615,53 @@ function startFirestore() {
     if (!drag) { buildRoster(); render(); if (kioskOn) renderKiosk(); }
   }, e => { $("conn").lastChild.textContent = "Firestore error: " + e.code; });
 }
+/* ============================================================
+   SYNC FROM FINDMI — weekly personnel check.
+   state.snapshot holds the FindMi-sourced guest list as of the last sync; the sync diffs the
+   live roster against it: new people (need an invite), people gone, role/store changes, and
+   people whose FindMi key changed (e.g. GM → DM) whose RSVP/seat/check-in are migrated.
+   ============================================================ */
+let syncPlan = null;
+function peopleSnapshot() { const o = {}; Object.values(roster).filter(g => !g.extra).forEach(g => o[g.key] = { name: g.name, group: g.group, sub: g.sub }); return o; }
+window.syncFindMi = async function () {
+  $("syncBody").innerHTML = `<div class="empty" style="color:var(--muted);padding:14px;text-align:center;">Reading FindMi…</div>`; $("syncMeta").textContent = ""; $("syncModal").classList.add("active");
+  try { const r = await fetch(FINDMI_URL + "?_=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw new Error("HTTP " + r.status); findmi = await r.json(); try { localStorage.setItem("partymiFindmi", JSON.stringify(findmi)); } catch (x) {} buildRoster(); }
+  catch (e) { $("syncBody").innerHTML = `<div class="err" style="padding:10px;">Couldn't reach FindMi: ${esc(e.message)}</div>`; return; }
+  const prev = state.snapshot && state.snapshot.people ? state.snapshot.people : null;
+  const cur = peopleSnapshot();
+  const added = [], gone = [], changed = [], migr = [];
+  if (prev) {
+    Object.keys(cur).forEach(k => { if (!prev[k]) added.push(k); else if (prev[k].sub !== cur[k].sub || prev[k].name !== cur[k].name) changed.push({ k, from: prev[k], to: cur[k] }); });
+    Object.keys(prev).forEach(k => { if (!cur[k]) gone.push(k); });
+    // same person, new key (promoted GM → DM, DM → Director…): carry their RSVP / seat / check-in across
+    gone.slice().forEach(ok => { const nk = added.find(ak => samePerson(prev[ok].name, cur[ak].name)); if (nk) { migr.push({ from: ok, to: nk, name: cur[nk].name, fromSub: prev[ok].sub, toSub: cur[nk].sub }); gone.splice(gone.indexOf(ok), 1); added.splice(added.indexOf(nk), 1); } });
+  }
+  syncPlan = { prev, cur, added, gone, changed, migr };
+  let h = "";
+  if (!prev) h += `<div class="sy info"><div class="d">First sync — the current FindMi guest list (${Object.keys(cur).length} people) becomes the baseline. From next week on you'll see exactly who is new, who left, and who changed role or store.</div></div>`;
+  else if (!added.length && !gone.length && !changed.length && !migr.length) h += `<div class="sync-ok">✓ No personnel changes since ${new Date(state.snapshot.at).toLocaleString()}.</div>`;
+  const row = (tag, label, t, d) => `<div class="sy info"><div><div class="t"><span class="tag ${tag}">${label}</span>${t}</div>${d ? `<div class="d">${d}</div>` : ""}</div></div>`;
+  if (added.length) { h += `<div class="sync-sect"><h4>New — need an invite <span class="n">${added.length}</span></h4>`; added.sort((a, b) => cur[a].name.localeCompare(cur[b].name)).forEach(k => h += row("new", "New", `${esc(cur[k].name)}`, `${esc(cur[k].sub)}${roster[k] && roster[k].phone ? " · " + esc(fmtPhone(roster[k].phone)) : ""}`)); h += `<div class="d" style="font-size:.72rem;color:var(--muted);padding:6px 8px;">They're added to the guest list with a <b>NEW · needs invite</b> tag. Click the tag (or use the "Needs invite" filter) once you've sent the invite.</div></div>`; }
+  if (migr.length) { h += `<div class="sync-sect"><h4>Changed role — RSVP &amp; seat carried over <span class="n">${migr.length}</span></h4>`; migr.forEach(m => h += row("role", "Role", `${esc(m.name)}: ${esc(m.fromSub)} → <b>${esc(m.toSub)}</b>`, `Their RSVP, +1, seat and check-in move to the new record. (Auto-seat may want to re-group them — re-run it when you're ready.)`)); h += `</div>`; }
+  if (changed.length) { h += `<div class="sync-sect"><h4>Moved / renamed <span class="n">${changed.length}</span></h4>`; changed.forEach(c => h += row("chg", "Changed", `${esc(c.to.name)}`, `${esc(c.from.sub)} → <b>${esc(c.to.sub)}</b>${c.from.name !== c.to.name ? " · was \"" + esc(c.from.name) + "\"" : ""} — RSVP and seat unchanged.`)); h += `</div>`; }
+  if (gone.length) { h += `<div class="sync-sect"><h4>No longer in FindMi <span class="n">${gone.length}</span></h4>`; gone.forEach(k => { const g = prev[k]; const had = (state.guests[k] || {}).rsvp === "yes"; h += row("gone", "Gone", `${esc(g.name)}`, `${esc(g.sub)}${had ? " · <b>had RSVP'd Yes</b>" : ""} — removed from the guest list; their seat is freed. If they should still come (e.g. retiring but invited), add them under <b>+ Add guest</b>.`); }); h += `</div>`; }
+  $("syncBody").innerHTML = h;
+  $("syncMeta").textContent = `${Object.keys(cur).length} people from FindMi · ${Object.values(state.extras || {}).length} added by hand`;
+  $("syncApply").textContent = prev ? "Save & tag new people" : "Save baseline";
+};
+window.applySync = function () {
+  if (!syncPlan) return;
+  const { cur, added, gone, migr } = syncPlan;
+  migr.forEach(m => migrateKey(m.from, m.to));
+  added.forEach(k => { state.guests[k] = Object.assign({}, gInfo(k), { needsInvite: true, firstSeen: Date.now() }); });
+  gone.forEach(k => { if (state.guests[k]) { state.guests[k] = Object.assign({}, state.guests[k], { goneAt: Date.now() }); } });   // kept (harmless) in case they come back
+  state.snapshot = { at: Date.now(), people: cur };
+  const parts = []; if (added.length) parts.push(added.length + " new"); if (migr.length) parts.push(migr.length + " role change" + (migr.length === 1 ? "" : "s")); if (gone.length) parts.push(gone.length + " gone");
+  save("FindMi sync" + (parts.length ? ": " + parts.join(", ") : " (no changes)"));
+  closeModal("syncModal"); render(); if (added.length) { showTab("guests"); setFilter("invite"); }
+  toast(parts.length ? "Synced — " + parts.join(", ") : "Synced — no personnel changes");
+};
+
 async function loadFindMi() {
   try { const r = await fetch(FINDMI_URL + "?_=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw new Error("HTTP " + r.status); findmi = await r.json(); try { localStorage.setItem("partymiFindmi", JSON.stringify(findmi)); } catch (x) {} buildRoster(); render(); if (kioskOn) renderKiosk(); }
   catch (e) { if (findmi) { toast("FindMi unreachable — using the last copy from this device"); return; } $("conn").lastChild.textContent = "FindMi unreachable"; $("guestList").innerHTML = `<div class="group"><div style="padding:14px;color:var(--muted)">Couldn't load FindMi (${esc(e.message)}). <a href="#" onclick="location.reload();return false;">Reload</a></div></div>`; }
@@ -594,7 +691,7 @@ window.toggleGroup = g => { closedGroups.has(g) ? closedGroups.delete(g) : close
 function renderGuests() {
   const q = ($("q").value || "").trim().toLowerCase();
   const list = Object.values(roster).filter(g => {
-    if (filter === "hidden") { if (!hidden(g.key)) return false; } else { if (hidden(g.key)) return false; if (filter !== "all" && rsvp(g.key) !== filter) return false; }
+    if (filter === "hidden") { if (!hidden(g.key)) return false; } else if (filter === "invite") { if (hidden(g.key) || !gInfo(g.key).needsInvite) return false; } else { if (hidden(g.key)) return false; if (filter !== "all" && rsvp(g.key) !== filter) return false; }
     if (q && !(g.name + " " + g.sub + " " + plusName(g.key)).toLowerCase().includes(q)) return false; return true;
   });
   let h = "";
@@ -606,7 +703,7 @@ function renderGuests() {
     rows.forEach(g => {
       const r = rsvp(g.key), p = hasPlus(g.key), tb = tableOfOcc("g:" + g.key);
       h += `<div class="row ${r === "no" ? "off" : ""}">
-        <div><div class="nm">${esc(g.name)}${g.extra ? ` <button class="btn xs" onclick="openExtra('${g.key}')">✎</button>` : ""}</div><div class="sub">${esc(g.sub)}</div></div>
+        <div><div class="nm">${esc(g.name)}${gInfo(g.key).needsInvite ? ` <span class="pill invite" title="New since last sync — click when you've sent the invite" onclick="markInvited('${g.key}')">NEW · needs invite ✓</span>` : ""}${g.extra ? ` <button class="btn xs" onclick="openExtra('${g.key}')">✎</button>` : ""}</div><div class="sub">${esc(g.sub)}</div></div>
         <div class="seg rsvp"><button class="${r === "invited" ? "on" : ""}" onclick="setRsvp('${g.key}','invited')">?</button><button class="${r === "yes" ? "on yes" : ""}" onclick="setRsvp('${g.key}','yes')">Yes</button><button class="${r === "no" ? "on no" : ""}" onclick="setRsvp('${g.key}','no')">No</button></div>
         <label class="tog p1"><input type="checkbox" ${p ? "checked" : ""} onchange="setPlus('${g.key}', this.checked)"> +1</label>
         <input class="p1n" placeholder="+1 name" value="${esc(gInfo(g.key).plusOneName || "")}" ${p ? "" : "disabled"} onchange="setField('${g.key}','plusOneName',this.value)">
@@ -622,6 +719,7 @@ window.setRsvp = (k, v) => { state.guests[k] = Object.assign({}, gInfo(k), { rsv
 window.setPlus = (k, v) => { state.guests[k] = Object.assign({}, gInfo(k), { plusOne: v }); save((v ? "+1 added — " : "+1 removed — ") + (roster[k] || {}).name); render(); };
 window.setField = (k, f, v) => { state.guests[k] = Object.assign({}, gInfo(k), { [f]: v }); save((f === "hidden" ? (v ? "Hid " : "Unhid ") : f === "plusOneName" ? "+1 name — " : "Note — ") + (roster[k] || {}).name); render(); };
 window.bulkPlusOne = on => { if (!confirm(on ? "Turn on a +1 for every guest on the list?" : "Remove the +1 from every guest?")) return; Object.keys(roster).forEach(k => { if (!hidden(k)) state.guests[k] = Object.assign({}, gInfo(k), { plusOne: on }); }); save(on ? "+1 for everyone" : "Cleared all +1s"); render(); };
+window.markInvited = k => { state.guests[k] = Object.assign({}, gInfo(k), { needsInvite: false, invitedAt: Date.now() }); save("Marked invited — " + (roster[k] || {}).name, { silent: true }); render(); };
 window.setOnlyYes = v => { state.settings.onlyYes = v; save(v ? "Seat confirmed only: on" : "Seat confirmed only: off"); render(); };
 
 /* ---- seating ---- */
